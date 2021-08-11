@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/constant/color.dart';
+import 'package:frontend/screens/components/CircleChessBackground.dart';
 import 'package:frontend/screens/components/WelcomeBackground.dart';
 import 'package:frontend/screens/login/LoginScreen.dart';
 
@@ -23,12 +24,7 @@ class WelcomeScreen extends StatelessWidget {
               children: <Widget>[
                 Column(
                   children: [
-                    ClipRRect(
-                        borderRadius: BorderRadius.circular(size.width * 0.3),
-                        child: Image.asset(
-                          "assets/images/bg_chess.png",
-                          width: size.width * 0.6,
-                        )),
+                    CircleChessBackground(),
                     SizedBox(
                       height: 20,
                     ),

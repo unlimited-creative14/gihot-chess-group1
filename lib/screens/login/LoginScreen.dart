@@ -1,20 +1,44 @@
-import 'dart:ffi';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/constant/color.dart';
+import 'package:frontend/screens/components/CircleChessBackground.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
 import 'package:frontend/screens/components/TextContainer.dart';
 import 'package:frontend/screens/components/WelcomeBackground.dart';
+import 'package:frontend/screens/home/HomeScreen.dart';
+import 'package:frontend/screens/signup/SignupScreen.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   String email = "";
   String password = "";
+  bool obscurePassword = true;
+
+  void changeHideShowPass() {
+    setState(() {
+      obscurePassword = !obscurePassword;
+    });
+  }
+
+  void submit(context) {
+    print("email : $email");
+    print("password: $password");
+    // submit with email and password variables
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => HomeScreen()));
+  }
+
+  void signup(context) {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => SignupScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-
-    bool obscurePassword = true;
     return Scaffold(
       body: WelcomeBackground(
         child: SingleChildScrollView(
@@ -26,19 +50,13 @@ class LoginScreen extends StatelessWidget {
               children: <Widget>[
                 Container(
                   margin: EdgeInsets.symmetric(vertical: 30),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(size.width * 0.3),
-                    child: Image.asset(
-                      "assets/images/bg_chess.png",
-                      width: size.width * 0.6,
-                    ),
-                  ),
+                  child: CircleChessBackground(),
                 ),
                 Text(
                   "Đăng nhập",
                   style: TextStyle(
                     fontSize: 25,
-                    color: white,
+                    color: Colors.white,
                   ),
                 ),
                 SizedBox(
@@ -73,7 +91,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                         suffixIcon: GestureDetector(
                           onTap: () {
-                            obscurePassword = true;
+                            changeHideShowPass();
                           },
                           child: Icon(
                             Icons.visibility,
@@ -91,7 +109,7 @@ class LoginScreen extends StatelessWidget {
                   child: RoundedButton(
                       text: "Đăng nhập",
                       onpress: () {
-                        print("email $email");
+                        submit(context);
                       }),
                 ),
                 SizedBox(
@@ -102,11 +120,16 @@ class LoginScreen extends StatelessWidget {
                   children: [
                     Text(
                       "Chưa có tài khoản ? ",
-                      style: TextStyle(fontSize: 18, color: white),
+                      style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
-                    Text(
-                      "Đăng kí ngay",
-                      style: TextStyle(fontSize: 20, color: dark_blue),
+                    GestureDetector(
+                      onTap: () {
+                        signup(context);
+                      },
+                      child: Text(
+                        "Đăng kí ngay",
+                        style: TextStyle(fontSize: 20, color: dark_blue),
+                      ),
                     )
                   ],
                 )
@@ -117,10 +140,4 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
-
-  // @override
-  // State<StatefulWidget> createState() {
-  //   // TODO: implement createState
-  //   throw UnimplementedError();
-  // }
 }

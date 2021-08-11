@@ -7,13 +7,15 @@ class RoundedButton extends StatelessWidget {
   final String text;
   final VoidCallback onpress;
   final Color backgroundColor, foregroundColor, textColor;
+  final double textSize;
   const RoundedButton(
       {Key? key,
       required this.text,
       required this.onpress,
       this.backgroundColor = light_blue,
       this.foregroundColor = dark_blue,
-      this.textColor = black})
+      this.textSize = 25.0,
+      this.textColor = Colors.black})
       : super(key: key);
 
   @override
@@ -29,7 +31,7 @@ class RoundedButton extends StatelessWidget {
           onPressed: onpress,
           child: Text(
             text,
-            style: TextStyle(fontSize: 25, color: black),
+            style: TextStyle(fontSize: textSize, color: Colors.black),
           )),
     );
   }
