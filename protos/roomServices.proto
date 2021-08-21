@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "vn.gihot.chess.gserver.message.RoomMessage";
+
+message RoomCommonRequest {
+    string player_id = 1;
+    string room_id = 2;
+}
+
+message RoomCommonReply {
+    string success = 1;
+    string room_id = 2;
+}
+
+service RoomService {
+    rpc CreateRoom(RoomCommonRequest) returns (RoomCommonReply);
+    rpc DestroyRoom(RoomCommonRequest) returns (RoomCommonReply);
+    rpc JoinRoom(RoomCommonRequest) returns (RoomCommonReply);
+}

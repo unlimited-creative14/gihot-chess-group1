@@ -1,0 +1,11 @@
+for build protoc:
+    download protocol buffer compiler:
+        https://github.com/protocolbuffers/protobuf/releases/tag/v3.17.3
+        unzip and insert protoc env
+
+    insert pub env
+        \flutter\bin\cache\dart-sdk\bin
+
+    insert .pub-cache env
+        \flutter\.pub-cache\bin
+
