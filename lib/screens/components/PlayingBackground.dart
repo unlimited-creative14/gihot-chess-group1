@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-class WelcomeBackground extends StatelessWidget {
+class PlayingBackground extends StatelessWidget {
   final Widget child;
-  const WelcomeBackground({Key? key, required this.child}) : super(key: key);
+  const PlayingBackground({Key? key, required this.child}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class WelcomeBackground extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
                 image: DecorationImage(
-                    image: AssetImage("assets/images/welcome_background.png"),
+                    image: AssetImage("assets/images/room_background.png"),
                     fit: BoxFit.fill)),
           ),
           child,
