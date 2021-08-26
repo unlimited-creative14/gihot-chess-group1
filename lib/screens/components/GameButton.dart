@@ -23,35 +23,39 @@ class GameButton extends StatelessWidget {
     return Container(
       height: size.width * 0.4,
       width: size.width * 0.4,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            bottom: 0,
-            child: ClipRRect(
-              borderRadius: BorderRadius.all(Radius.circular(size.width * 0.1)),
-              child: Container(
-                height: size.width * 0.25,
-                width: size.width * 0.4,
-                color: light_blue,
+      child: GestureDetector(
+        onTap: onpress,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Positioned(
+              bottom: 0,
+              child: ClipRRect(
+                borderRadius:
+                    BorderRadius.all(Radius.circular(size.width * 0.1)),
+                child: Container(
+                  height: size.width * 0.25,
+                  width: size.width * 0.4,
+                  color: light_blue,
+                ),
               ),
             ),
-          ),
-          Positioned(
-            top: 0,
-            child: Container(
-              height: size.width * 0.25,
-              width: size.width * 0.25,
-              child: imgWidget,
+            Positioned(
+              top: 0,
+              child: Container(
+                height: size.width * 0.25,
+                width: size.width * 0.25,
+                child: imgWidget,
+              ),
             ),
-          ),
-          Positioned(
-              bottom: size.width * 0.05,
-              child: Text(
-                text,
-                style: TextStyle(fontSize: fontsize, color: textColor),
-              ))
-        ],
+            Positioned(
+                bottom: size.width * 0.05,
+                child: Text(
+                  text,
+                  style: TextStyle(fontSize: fontsize, color: textColor),
+                ))
+          ],
+        ),
       ),
     );
   }

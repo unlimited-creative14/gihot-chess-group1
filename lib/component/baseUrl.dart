@@ -1,7 +1,7 @@
 import 'package:grpc/grpc.dart';
 
-const baseUrl = "192.168.1.4";
-const port = 9090;
+const baseUrl = "192.168.1.6";
+const port = 9192;
 
 final ClientChannel channel = ClientChannel(baseUrl,
     port: port,

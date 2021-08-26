@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/component/chatService.dart';
+import 'package:frontend/component/gameService.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/screens/welcome/WelcomeScreen.dart';
 
@@ -7,9 +9,13 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  // ChatServices chatServices = ChatServices();
+  // GameService gameService = GameService();
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // gameService.newgame();
+    // chatServices.subcribe();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Chinese chess',
