@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/component/AccountService.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/screens/components/CircleChessBackground.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
@@ -16,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String email = "";
   String password = "";
   bool obscurePassword = true;
+  AccountService accountService = AccountService();
 
   void changeHideShowPass() {
     setState(() {
@@ -23,12 +25,14 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  void submit(context) {
+  void submit(context) async {
     print("email : $email");
     print("password: $password");
     // submit with email and password variables
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => HomeScreen()));
+    var respone = await accountService.login(email, password);
+    print(respone);
+    // Navigator.push(
+    //     context, MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 
   void signup(context) {

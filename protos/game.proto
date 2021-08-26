@@ -1,10 +1,12 @@
 syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "vn.gihot.chess.master.message.GameMessage";
+import "google/protobuf/empty.proto";
+
 
 message MoveChessRequest {
   string game_id = 1;
-  string color = 2;
+  string player_id = 2;
   string source = 3;
   string target = 4;
 }
@@ -21,14 +23,9 @@ message GameCommonReply
   string msg = 3;
 }
 
-message NewGameRequest {
-  string player_id = 1;
-}
-
 service GameService {
-//  rpc CreateGame(google.protobuf.Empty) returns (GameCommonReply);
-  rpc CreateGame(NewGameRequest) returns (stream GameCommonReply);
-  rpc StartGame(GameCommonRequest) returns (stream GameCommonReply);
-  rpc DoMoveChess(MoveChessRequest) returns (GameCommonReply);
-  rpc DestroyGame(GameCommonRequest) returns (GameCommonReply);
+  rpc CreateGame(google.protobuf.Empty) returns (GameCommonReply);
+  rpc SubscribeGame(GameCommonRequest) returns (stream GameCommonReply);
+  rpc GuestSubscribeGame(google.protobuf.Empty) returns (stream GameCommonReply);
+  rpc SendMove(MoveChessRequest) returns (GameCommonReply);
 }

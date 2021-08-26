@@ -1,7 +1,5 @@
 import 'package:frontend/component/baseUrl.dart';
-import 'package:frontend/generated/roomServices.pb.dart';
-import 'package:frontend/generated/roomServices.pbgrpc.dart';
-import 'package:grpc/grpc.dart';
+import 'package:frontend/generated/room/roomServices.pbgrpc.dart';
 
 class CreateRoomService {
   RoomServiceClient room = RoomServiceClient(channel);

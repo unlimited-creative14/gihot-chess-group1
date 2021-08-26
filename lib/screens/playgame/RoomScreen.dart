@@ -6,6 +6,7 @@ import 'package:frontend/screens/components/CustomBackButton.dart';
 import 'package:frontend/screens/components/GameButton.dart';
 import 'package:frontend/screens/components/PlayingBackground.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
+import 'package:frontend/screens/newroom/NewRoomScreen.dart';
 import 'package:frontend/screens/playinggame/PlayingGameScreen.dart';
 
 class RoomScreen extends StatefulWidget {
@@ -45,7 +46,7 @@ class _RoomScreenState extends State<RoomScreen> {
 
   void commonGame(context) {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => PlayingGameScreen()));
+        context, MaterialPageRoute(builder: (context) => NewRoomScreen()));
   }
 
   void playwithfr(context) {}

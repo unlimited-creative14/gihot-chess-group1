@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend/component/gameService.dart';
 import 'package:frontend/constant/color.dart';
 
 class PlayingGameScreen extends StatefulWidget {
@@ -11,6 +12,7 @@ class PlayingGameScreen extends StatefulWidget {
 
 class _PlayingGameScreenState extends State<PlayingGameScreen> {
   String player = "r_";
+
   var chessDetail = [
     "chariot",
     "horse",
@@ -61,21 +63,29 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
 
   int pickedIdx = -1;
 
+  // Stream<GameCommonReply> reply = GameService().reply();
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     double cell = size.width / 12;
+    if (player_color == -1) rotateBoard(board);
+
+    // reply.listen((event) {
+    //   print(event);
+    // });
+
     return Container(
       child: Scaffold(
         body: Stack(
           children: [
-            Positioned(
+            Center(
                 child: Container(
                     decoration: BoxDecoration(
                         image: DecorationImage(
-                            image: AssetImage("assets/images/board.png"))))),
-            Positioned(
-              top: (size.height - 11.2 * size.width / 9) / 2,
+                            image: AssetImage("assets/images/board.png"),
+                            fit: BoxFit.fitWidth)))),
+            Center(
               child: Container(
                 width: size.width,
                 height: 11.2 * size.width / 9,

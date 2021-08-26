@@ -12,7 +12,7 @@ import 'package:protobuf/protobuf.dart' as $pb;
 class MoveChessRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'MoveChessRequest', createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gameId')
-    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'color')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerId')
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'source')
     ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'target')
     ..hasRequiredFields = false
@@ -21,7 +21,7 @@ class MoveChessRequest extends $pb.GeneratedMessage {
   MoveChessRequest._() : super();
   factory MoveChessRequest({
     $core.String? gameId,
-    $core.String? color,
+    $core.String? playerId,
     $core.String? source,
     $core.String? target,
   }) {
@@ -29,8 +29,8 @@ class MoveChessRequest extends $pb.GeneratedMessage {
     if (gameId != null) {
       _result.gameId = gameId;
     }
-    if (color != null) {
-      _result.color = color;
+    if (playerId != null) {
+      _result.playerId = playerId;
     }
     if (source != null) {
       _result.source = source;
@@ -71,13 +71,13 @@ class MoveChessRequest extends $pb.GeneratedMessage {
   void clearGameId() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get color => $_getSZ(1);
+  $core.String get playerId => $_getSZ(1);
   @$pb.TagNumber(2)
-  set color($core.String v) { $_setString(1, v); }
+  set playerId($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasColor() => $_has(1);
+  $core.bool hasPlayerId() => $_has(1);
   @$pb.TagNumber(2)
-  void clearColor() => clearField(2);
+  void clearPlayerId() => clearField(2);
 
   @$pb.TagNumber(3)
   $core.String get source => $_getSZ(2);
@@ -232,52 +232,5 @@ class GameCommonReply extends $pb.GeneratedMessage {
   $core.bool hasMsg() => $_has(2);
   @$pb.TagNumber(3)
   void clearMsg() => clearField(3);
-}
-
-class NewGameRequest extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NewGameRequest', createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerId')
-    ..hasRequiredFields = false
-  ;
-
-  NewGameRequest._() : super();
-  factory NewGameRequest({
-    $core.String? playerId,
-  }) {
-    final _result = create();
-    if (playerId != null) {
-      _result.playerId = playerId;
-    }
-    return _result;
-  }
-  factory NewGameRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory NewGameRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  NewGameRequest clone() => NewGameRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  NewGameRequest copyWith(void Function(NewGameRequest) updates) => super.copyWith((message) => updates(message as NewGameRequest)) as NewGameRequest; // ignore: deprecated_member_use
-  $pb.BuilderInfo get info_ => _i;
-  @$core.pragma('dart2js:noInline')
-  static NewGameRequest create() => NewGameRequest._();
-  NewGameRequest createEmptyInstance() => create();
-  static $pb.PbList<NewGameRequest> createRepeated() => $pb.PbList<NewGameRequest>();
-  @$core.pragma('dart2js:noInline')
-  static NewGameRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NewGameRequest>(create);
-  static NewGameRequest? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get playerId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set playerId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasPlayerId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearPlayerId() => clearField(1);
 }
 
