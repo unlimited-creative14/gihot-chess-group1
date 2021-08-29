@@ -1,10 +1,22 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend/component/gameService.dart';
+import 'package:frontend/component/GameService.dart';
 import 'package:frontend/constant/color.dart';
+import 'package:frontend/generated/game/game.pb.dart';
 
 class PlayingGameScreen extends StatefulWidget {
-  PlayingGameScreen({Key? key}) : super(key: key);
+  final String gameId;
+  final String playerId;
+
+  // -1 if the color is blue , otherwise 1
+  final int playerColor;
+  PlayingGameScreen(
+      {Key? key,
+      required this.gameId,
+      required this.playerId,
+      required this.playerColor})
+      : super(key: key);
 
   @override
   _PlayingGameScreenState createState() => _PlayingGameScreenState();
@@ -12,6 +24,13 @@ class PlayingGameScreen extends StatefulWidget {
 
 class _PlayingGameScreenState extends State<PlayingGameScreen> {
   String player = "r_";
+  int playerColor = -1;
+  int pickedIdx = -1;
+  GameService gameService = GameService();
+  String gameId = "";
+  String playerId = "";
+  String source = "", target = "";
+  int rotateCount = 0;
 
   var chessDetail = [
     "chariot",
@@ -47,34 +66,174 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     }
   }
 
-  int player_color = 1;
-
-  void tap(int index) {
-    // if ((board[index ~/ 9][index % 9] <= 0 && player_color == -1) ||
-    //     (board[index ~/ 9][index % 9] >= 0 && player_color == 1)) {
-    setState(() {
-      if (pickedIdx == -1)
+  void tap(int index) async {
+    print("index :$index");
+    if (pickedIdx == -1 && playerColor * board[index ~/ 9][index % 9] > 0) {
+      setState(() {
         pickedIdx = index;
-      else
+      });
+    } else if (pickedIdx != -1 && pickedIdx == index) {
+      setState(() {
         pickedIdx = -1;
-    });
-    // }
+      });
+    } else if (pickedIdx != -1 &&
+        playerColor * board[index ~/ 9][index % 9] <= 0) {
+      // parser index to string
+      if (playerColor == -1) {
+        source = String.fromCharCode((89 - pickedIdx) % 9 + 97) +
+            ((89 - pickedIdx) ~/ 9).toString();
+        target = String.fromCharCode((89 - index) % 9 + 97) +
+            ((89 - index) ~/ 9).toString();
+      } else {
+        source = String.fromCharCode(pickedIdx % 9 + 97) +
+            (pickedIdx ~/ 9).toString();
+        target = String.fromCharCode(index % 9 + 97) + (index ~/ 9).toString();
+      }
+      // put into server
+      try {
+        print(
+            "send info, gameid:  $gameId, playerId: $playerId, source: $source, target: $target");
+        var respone =
+            await gameService.sendMove(gameId, playerId, source, target);
+
+        if (respone.isError) {
+          print("err message from server:  ${respone.msg} ");
+          showalert(respone.msg);
+        } else {
+          setState(() {
+            pickedIdx = -1;
+          });
+          // valid move
+          //update board and animation
+          setState(() {
+            board[pickedIdx ~/ 9][pickedIdx % 9] = 0;
+          });
+          chessMoving(pickedIdx, index);
+        }
+      } catch (e) {
+        print("error: $e");
+        showalert("Something went wrong, please check your connection");
+      }
+    } else if (playerColor * board[index ~/ 9][index % 9] > 0) {
+      setState(() {
+        pickedIdx = index;
+      });
+    }
   }
 
-  int pickedIdx = -1;
+  void onreply(GameCommonReply reply) {
+    // when recieve reply from server
+    if (reply.isError) {
+      Navigator.pop(context);
+      print(reply.msg);
+    } else if (reply.msg.length == 4) {
+      // return a moving chess from opponent , example : "a0a1"
+      // parser respone
+      List<int> index = reply.msg.codeUnits;
+      // from character to index of row
+      index[0] -= 97;
+      index[3] -= 97;
+      // if player color is red , rotate index of board
+      int from = playerColor == 1
+          ? index[0] + index[1] * 9
+          : 89 - index[0] - index[1] * 9;
+      int to = playerColor == 1
+          ? index[2] + index[3] * 9
+          : 89 - index[2] - index[3] * 9;
+      // update chess board
+      chessMoving(from, to);
+    } else {
+      print(reply.msg);
+    }
+  }
 
-  // Stream<GameCommonReply> reply = GameService().reply();
+  void subscribeGame() async {
+    try {
+      await for (GameCommonReply respone
+          in GameService().subscribeGame(widget.gameId, widget.playerId)) {
+        print("reply from server : $respone");
+        print("reply : ${respone.msg}");
+        onreply(respone);
+      }
+    } catch (e) {
+      print(e);
+      showalert("Something went wrong, please check your connection");
+    }
+  }
+
+  void chessMoving(int from, int to) {
+    int type = board[from ~/ 9][to % 9];
+    Size source = cellToPositon(from);
+    Size target = cellToPositon(to);
+    String pre = type < 0 ? "b_" : "r_";
+    pointerurl = "assets/icons/" + pre + chessDetail[type.abs() - 1] + ".svg";
+    pointerVisiable = true;
+    double x_step = (target.width - source.width) / 5;
+    double y_step = (target.height - source.height) / 5;
+    int idx = 0;
+    poineterLeft = source.width;
+    pointerTop = source.height;
+    Timer.periodic(Duration(milliseconds: 20), (timer) {
+      setState(() {
+        if (idx == 5) {
+          timer.cancel();
+          pointerVisiable = false;
+          board[to ~/ 9][to % 9] = type;
+        }
+        poineterLeft += x_step;
+        pointerTop += y_step;
+        idx += 1;
+      });
+    });
+  }
+
+  // init some field of pointer animation
+  // when chess moving, pointer is moved
+  double widthScreen = 0;
+  double heightScreen = 0;
+  String pointerurl = "assets/icons/r_sodier.svg";
+  bool pointerVisiable = false;
+  double pointerTop = 0;
+  double poineterLeft = 0;
+
+  Size cellToPositon(int cell) {
+    double x = 0, y = 0;
+    x = (cell % 9) * widthScreen / 9;
+    y = (cell ~/ 9) * widthScreen / 9 +
+        (heightScreen - 10 * widthScreen / 9) / 2;
+    return Size(x, y);
+  }
+
+  // Alert to the client with a message
+  void showalert(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: light,
+      content: Text(message, style: TextStyle(color: Colors.red)),
+      duration: Duration(seconds: 2),
+    ));
+  }
+
+  // when frontend render complete , subcribe to the server
+  // if something wrong when subcribe, pop context and respone error
+  @override
+  void initState() {
+    playerColor = widget.playerColor;
+    playerId = widget.playerId;
+    gameId = widget.gameId;
+    subscribeGame();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    widthScreen = size.width;
+    heightScreen = size.height;
     double cell = size.width / 12;
-    if (player_color == -1) rotateBoard(board);
-
-    // reply.listen((event) {
-    //   print(event);
-    // });
-
+    if (playerColor == -1 && rotateCount == 0) {
+      rotateBoard(board);
+      rotateCount += 1;
+    }
     return Container(
       child: Scaffold(
         body: Stack(
@@ -162,7 +321,22 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
                   child: Row(
                     children: [Text("data"), Text("data1")],
                   ),
-                ))
+                )),
+            Visibility(
+                visible: pointerVisiable,
+                child: Positioned(
+                    top: pointerTop,
+                    left: poineterLeft,
+                    child: Container(
+                      width: size.width / 9,
+                      height: size.width / 9,
+                      child: Center(
+                          child: SvgPicture.asset(
+                        pointerurl,
+                        width: 0.9 * size.width / 12,
+                        height: 0.9 * size.width / 12,
+                      )),
+                    )))
           ],
         ),
       ),

@@ -98,6 +98,61 @@ class MoveChessRequest extends $pb.GeneratedMessage {
   void clearTarget() => clearField(4);
 }
 
+class GameCreateRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GameCreateRequest', createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roomId')
+    ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerIds', protoName: 'playerIds')
+    ..hasRequiredFields = false
+  ;
+
+  GameCreateRequest._() : super();
+  factory GameCreateRequest({
+    $core.String? roomId,
+    $core.Iterable<$core.String>? playerIds,
+  }) {
+    final _result = create();
+    if (roomId != null) {
+      _result.roomId = roomId;
+    }
+    if (playerIds != null) {
+      _result.playerIds.addAll(playerIds);
+    }
+    return _result;
+  }
+  factory GameCreateRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GameCreateRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GameCreateRequest clone() => GameCreateRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GameCreateRequest copyWith(void Function(GameCreateRequest) updates) => super.copyWith((message) => updates(message as GameCreateRequest)) as GameCreateRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GameCreateRequest create() => GameCreateRequest._();
+  GameCreateRequest createEmptyInstance() => create();
+  static $pb.PbList<GameCreateRequest> createRepeated() => $pb.PbList<GameCreateRequest>();
+  @$core.pragma('dart2js:noInline')
+  static GameCreateRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GameCreateRequest>(create);
+  static GameCreateRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get roomId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set roomId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRoomId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRoomId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.List<$core.String> get playerIds => $_getList(1);
+}
+
 class GameCommonRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GameCommonRequest', createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gameId')

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/component/RoomService.dart';
 import 'package:frontend/constant/color.dart';
+import 'package:frontend/generated/room/room.pbgrpc.dart';
 import 'package:frontend/screens/components/PlayingBackground.dart';
 
 class NewRoomScreen extends StatefulWidget {
@@ -10,6 +12,24 @@ class NewRoomScreen extends StatefulWidget {
 }
 
 class _NewRoomScreenState extends State<NewRoomScreen> {
+  RoomService roomService = RoomService();
+
+  String playerId = "1";
+  @override
+  void initState() async {
+    // when a new screen is added, reuesting to the server
+    var respone = await roomService.createRoom(playerId);
+    if (respone.success == "true") {
+      // screate game success , join room to stream recieves from the server
+      // roomService.joinRoom(respone.roomId, playerId);
+    } else {
+      // something wrong
+      // todo: alert to client
+      Navigator.pop(context);
+    }
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;

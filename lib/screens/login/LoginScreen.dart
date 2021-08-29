@@ -29,10 +29,10 @@ class _LoginScreenState extends State<LoginScreen> {
     print("email : $email");
     print("password: $password");
     // submit with email and password variables
-    var respone = await accountService.login(email, password);
-    print(respone);
-    // Navigator.push(
-    //     context, MaterialPageRoute(builder: (context) => HomeScreen()));
+    // var respone = await accountService.login(email, password);
+    // print(respone);
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 
   void signup(context) {

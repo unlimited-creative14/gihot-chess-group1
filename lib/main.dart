@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:frontend/component/chatService.dart';
-import 'package:frontend/component/gameService.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/screens/welcome/WelcomeScreen.dart';
 

@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend/component/GameService.dart';
 import 'package:frontend/constant/color.dart';
+import 'package:frontend/generated/game/game.pb.dart';
 import 'package:frontend/screens/components/CustomBackButton.dart';
 import 'package:frontend/screens/components/GameButton.dart';
 import 'package:frontend/screens/components/PlayingBackground.dart';
@@ -45,11 +47,96 @@ class _RoomScreenState extends State<RoomScreen> {
   void cancelGame(context) {}
 
   void commonGame(context) {
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => NewRoomScreen()));
+    // Navigator.push(
+    //     context, MaterialPageRoute(builder: (context) => PlayingGameScreen()));
   }
 
-  void playwithfr(context) {}
+  void playwithfr(context) {
+    typeGameInfo();
+  }
+
+  Future<void> typeGameInfo() async {
+    String playerId = "";
+    String gameId = "";
+    int playerColor = 1;
+    String error = "";
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Enter your id and game id"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  onChanged: (text) {
+                    playerId = text;
+                  },
+                  decoration: InputDecoration(
+                      icon: Icon(Icons.text_fields), hintText: "PlayerId"),
+                ),
+                TextField(
+                  onChanged: (text) {
+                    gameId = text;
+                  },
+                  decoration: InputDecoration(
+                      icon: Icon(Icons.text_fields), hintText: "GameId"),
+                ),
+                TextField(
+                  onChanged: (text) {
+                    playerColor = int.parse(text);
+                  },
+                  decoration: InputDecoration(
+                      icon: Icon(Icons.text_fields),
+                      hintText: "Player Color : 1 is red, -1 is blue"),
+                ),
+                Text(
+                  error,
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 18,
+                      fontStyle: FontStyle.italic),
+                )
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () async {
+                  try {
+                    print(gameId);
+                    print(playerId);
+                    Stream<GameCommonReply> reply =
+                        GameService().subscribeGame(gameId, playerId);
+                    await for (var respone in reply) {
+                      if (respone.isError) {
+                        print(respone.msg);
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text(respone.msg)));
+                      } else {
+                        Navigator.pop(context);
+                        // Navigate to playing screen and pass Stream respone
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => PlayingGameScreen(
+                                    gameId: gameId,
+                                    playerColor: playerColor,
+                                    playerId: playerId)));
+                      }
+                    }
+                  } catch (e) {
+                    error = e.toString();
+                    print(e);
+                  }
+                },
+                child: Text("submit"))
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

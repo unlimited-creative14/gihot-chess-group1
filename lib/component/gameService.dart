@@ -2,12 +2,20 @@ import 'package:frontend/generated/game/game.pbgrpc.dart';
 import 'baseUrl.dart';
 
 class GameService {
-  GameServiceClient gameServiceClient = GameServiceClient(channel);
+  GameServiceClient gameServiceClient = GameServiceClient(gamechanel);
 
-  Stream<GameCommonReply> reply() async* {
-    // await for (var msg
-    //     in gameServiceClient.createGame(NewGameRequest(playerId: "11"))) {
-    //   yield msg;
-    // }
+  Stream<GameCommonReply> subscribeGame(String gameId, String playerId) {
+    return gameServiceClient.subscribeGame(GameCommonRequest()
+      ..gameId = gameId
+      ..playerId = playerId);
+  }
+
+  Future<GameCommonReply> sendMove(
+      String gameId, String playerId, String source, String target) {
+    return gameServiceClient.sendMove(MoveChessRequest()
+      ..gameId = gameId
+      ..playerId = playerId
+      ..source = source
+      ..target = target);
   }
 }
