@@ -7,6 +7,7 @@ import 'package:frontend/screens/components/TextContainer.dart';
 import 'package:frontend/screens/components/WelcomeBackground.dart';
 import 'package:frontend/screens/home/HomeScreen.dart';
 import 'package:frontend/screens/signup/SignupScreen.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -18,10 +19,52 @@ class _LoginScreenState extends State<LoginScreen> {
   String password = "";
   bool obscurePassword = true;
   AccountService accountService = AccountService();
+  static final FacebookLogin facebookSignIn = new FacebookLogin();
+  String _message = 'Log in/out by pressing the buttons below.';
 
   void changeHideShowPass() {
     setState(() {
       obscurePassword = !obscurePassword;
+    });
+  }
+
+  Future<Null> _login() async {
+    final FacebookLoginResult result =
+    await facebookSignIn.logIn(['email']);
+
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        final FacebookAccessToken accessToken = result.accessToken;
+        _showMessage('''
+         Logged in!
+         
+         Token: ${accessToken.token}
+         User id: ${accessToken.userId}
+         Expires: ${accessToken.expires}
+         Permissions: ${accessToken.permissions}
+         Declined permissions: ${accessToken.declinedPermissions}
+         ''');
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        _showMessage('Login cancelled by the user.');
+        break;
+      case FacebookLoginStatus.error:
+        _showMessage('Something went wrong with the login process.\n'
+            'Here\'s the error Facebook gave us: ${result.errorMessage}');
+        break;
+    }
+  }
+
+  Future<Null> _logOut() async {
+    await facebookSignIn.logOut();
+    _showMessage('Logged out.');
+  }
+
+  void _showMessage(String message) {
+    setState(() {
+      _message = message;
     });
   }
 
@@ -114,6 +157,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       text: "Đăng nhập",
                       onpress: () {
                         submit(context);
+                      }),
+                ),
+                Container(
+                  width: size.width * 0.8,
+                  child: RoundedButton(
+                      text: "Đăng nhập với FB",
+                      onpress: () {
+                        _login();
                       }),
                 ),
                 SizedBox(
