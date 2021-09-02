@@ -32,4 +32,11 @@ class RoomService {
       ..roomId = roomId
       ..playerId = playerId);
   }
+
+  Future<RoomCommonReply> sendChat(
+      String message, String playerId, String roomId) {
+    return room.sendChat(ChatMessage()
+      ..request = RoomCommonRequest(playerId: playerId, roomId: roomId)
+      ..message = message);
+  }
 }

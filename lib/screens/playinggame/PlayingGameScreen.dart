@@ -4,18 +4,21 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/component/GameService.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/generated/game/game.pb.dart';
+import 'package:frontend/generated/room/room.pb.dart';
 
 class PlayingGameScreen extends StatefulWidget {
   final String gameId;
   final String playerId;
-
-  // -1 if the color is blue , otherwise 1
+  final String opponentsId;
   final int playerColor;
+  final Stream<RoomMessage> chatService;
   PlayingGameScreen(
       {Key? key,
       required this.gameId,
       required this.playerId,
-      required this.playerColor})
+      required this.opponentsId,
+      required this.playerColor,
+      required this.chatService})
       : super(key: key);
 
   @override
@@ -41,6 +44,9 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     "cannon",
     "sodier"
   ];
+
+  // waiting for opponent join this game
+  bool waiting = true;
 
   var board = [
     [-1, -2, -3, -4, -5, -4, -3, -2, -1],
@@ -96,6 +102,7 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
         var respone =
             await gameService.sendMove(gameId, playerId, source, target);
 
+        showalert("source: $source, target: $target");
         if (respone.isError) {
           print("err message from server:  ${respone.msg} ");
           showalert(respone.msg);
@@ -142,6 +149,7 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
           : 89 - index[2] - index[3] * 9;
       // update chess board
       chessMoving(from, to);
+    } else if (reply.msg.contains("boards")) {
     } else {
       print(reply.msg);
     }

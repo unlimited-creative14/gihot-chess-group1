@@ -42,6 +42,12 @@ message RoomMessage {
     string msg = 3;
 }
 
+message ChatMessage
+{
+    RoomCommonRequest request = 1;
+    string message = 3;
+}
+
 service RoomService {
     rpc CreateRoom(RoomCommonRequest) returns (RoomCommonReply);
     rpc DestroyRoom(RoomCommonRequest) returns (RoomCommonReply);
@@ -51,4 +57,7 @@ service RoomService {
 
     // return gameId, then client use it to subscribe game
     rpc RoomStartGame(RoomCommonRequest) returns(RoomMessage);
+
+    // chat room
+    rpc SendChat(ChatMessage) returns (RoomCommonReply);
 }

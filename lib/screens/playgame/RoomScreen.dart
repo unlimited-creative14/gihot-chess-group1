@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:frontend/component/GameService.dart';
+import 'package:frontend/component/RoomService.dart';
 import 'package:frontend/constant/color.dart';
-import 'package:frontend/generated/game/game.pb.dart';
+import 'package:frontend/generated/room/room.pb.dart';
 import 'package:frontend/screens/components/CustomBackButton.dart';
 import 'package:frontend/screens/components/GameButton.dart';
 import 'package:frontend/screens/components/PlayingBackground.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
 import 'package:frontend/screens/newroom/NewRoomScreen.dart';
-import 'package:frontend/screens/playinggame/PlayingGameScreen.dart';
 
 class RoomScreen extends StatefulWidget {
   @override
@@ -17,9 +16,11 @@ class RoomScreen extends StatefulWidget {
 }
 
 class _RoomScreenState extends State<RoomScreen> {
+  String playerId = "1";
   bool isWaiting = false;
   int counting = 0;
   bool stopTimer = false;
+  RoomService roomService = RoomService();
 
   void changeWaitingState(bool targetState) {
     setState(() {
@@ -46,90 +47,81 @@ class _RoomScreenState extends State<RoomScreen> {
   void hotGame(context) {}
   void cancelGame(context) {}
 
-  void commonGame(context) {
-    // Navigator.push(
-    //     context, MaterialPageRoute(builder: (context) => PlayingGameScreen()));
+  void commonGame(context) async {
+    var respone = await roomService.createRoom(playerId);
+    if (respone.success != "created") {
+      alertMsg("Không tìm thấy máy chủ");
+    } else {
+      print("roomId : ${respone.roomId}");
+      // join room
+      Stream<RoomMessage> joinroom =
+          roomService.joinRoom(respone.roomId, playerId);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => NewRoomScreen(
+            roomMesasge: joinroom,
+            playerId: playerId,
+          ),
+        ),
+      );
+    }
   }
 
   void playwithfr(context) {
     typeGameInfo();
   }
 
+  // when client click findgame button
+  void findroom(String roomId) async {
+    Stream<RoomMessage> joinroom = roomService.joinRoom(roomId, playerId);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NewRoomScreen(
+          playerId: playerId,
+          roomMesasge: joinroom,
+          ishost: false,
+        ),
+      ),
+    );
+  }
+
+  void alertMsg(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      backgroundColor: light,
+      content: Text(message, style: TextStyle(color: Colors.red)),
+      duration: Duration(seconds: 2),
+    ));
+  }
+
   Future<void> typeGameInfo() async {
-    String playerId = "";
-    String gameId = "";
-    int playerColor = 1;
-    String error = "";
+    String roomId = "";
 
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Enter your id and game id"),
+          title: Text("Nhập mã phòng"),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 TextField(
                   onChanged: (text) {
-                    playerId = text;
+                    roomId = text;
                   },
                   decoration: InputDecoration(
-                      icon: Icon(Icons.text_fields), hintText: "PlayerId"),
+                    icon: Icon(Icons.class_),
+                  ),
                 ),
-                TextField(
-                  onChanged: (text) {
-                    gameId = text;
-                  },
-                  decoration: InputDecoration(
-                      icon: Icon(Icons.text_fields), hintText: "GameId"),
-                ),
-                TextField(
-                  onChanged: (text) {
-                    playerColor = int.parse(text);
-                  },
-                  decoration: InputDecoration(
-                      icon: Icon(Icons.text_fields),
-                      hintText: "Player Color : 1 is red, -1 is blue"),
-                ),
-                Text(
-                  error,
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 18,
-                      fontStyle: FontStyle.italic),
-                )
               ],
             ),
           ),
           actions: [
             TextButton(
-                onPressed: () async {
-                  try {
-                    print(gameId);
-                    print(playerId);
-                    Stream<GameCommonReply> reply =
-                        GameService().subscribeGame(gameId, playerId);
-                    await for (var respone in reply) {
-                      if (respone.isError) {
-                        print(respone.msg);
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text(respone.msg)));
-                      } else {
-                        Navigator.pop(context);
-                        // Navigate to playing screen and pass Stream respone
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => PlayingGameScreen(
-                                    gameId: gameId,
-                                    playerColor: playerColor,
-                                    playerId: playerId)));
-                      }
-                    }
-                  } catch (e) {
-                    error = e.toString();
-                    print(e);
-                  }
+                onPressed: () {
+                  Navigator.pop(context);
+                  findroom(roomId);
                 },
                 child: Text("submit"))
           ],
