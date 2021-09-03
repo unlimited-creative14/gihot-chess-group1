@@ -12,13 +12,15 @@ class PlayingGameScreen extends StatefulWidget {
   final String opponentsId;
   final int playerColor;
   final Stream<RoomMessage> chatService;
+  final Stream<GameCommonReply> gameService;
   PlayingGameScreen(
       {Key? key,
       required this.gameId,
       required this.playerId,
       required this.opponentsId,
       required this.playerColor,
-      required this.chatService})
+      required this.chatService,
+      required this.gameService})
       : super(key: key);
 
   @override
@@ -38,8 +40,8 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   var chessDetail = [
     "chariot",
     "horse",
-    "advisor",
     "elephant",
+    "advisor",
     "king",
     "cannon",
     "sodier"
@@ -49,16 +51,16 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   bool waiting = true;
 
   var board = [
-    [-1, -2, -3, -4, -5, -4, -3, -2, -1],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, -6, 0, 0, 0, 0, 0, -6, 0],
-    [-7, 0, -7, 0, -7, 0, -7, 0, -7],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [7, 0, 7, 0, 7, 0, 7, 0, 7],
-    [0, 6, 0, 0, 0, 0, 0, 6, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [1, 2, 3, 4, 5, 4, 3, 2, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 6, 0, 0, 0, 0, 0, 6, 0],
+    [7, 0, 7, 0, 7, 0, 7, 0, 7],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [-7, 0, -7, 0, -7, 0, -7, 0, -7],
+    [0, -6, 0, 0, 0, 0, 0, -6, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [-1, -2, -3, -4, -5, -4, -3, -2, -1],
   ];
 
   void rotateBoard(var board) {
@@ -85,7 +87,7 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     } else if (pickedIdx != -1 &&
         playerColor * board[index ~/ 9][index % 9] <= 0) {
       // parser index to string
-      if (playerColor == -1) {
+      if (playerColor == 1) {
         source = String.fromCharCode((89 - pickedIdx) % 9 + 97) +
             ((89 - pickedIdx) ~/ 9).toString();
         target = String.fromCharCode((89 - index) % 9 + 97) +
@@ -102,20 +104,19 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
         var respone =
             await gameService.sendMove(gameId, playerId, source, target);
 
-        showalert("source: $source, target: $target");
         if (respone.isError) {
           print("err message from server:  ${respone.msg} ");
           showalert(respone.msg);
         } else {
-          setState(() {
-            pickedIdx = -1;
-          });
           // valid move
           //update board and animation
+          int _picked = pickedIdx;
+          int type = board[pickedIdx ~/ 9][pickedIdx % 9];
           setState(() {
             board[pickedIdx ~/ 9][pickedIdx % 9] = 0;
+            pickedIdx = -1;
           });
-          chessMoving(pickedIdx, index);
+          chessMoving(_picked, index, type);
         }
       } catch (e) {
         print("error: $e");
@@ -133,44 +134,49 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     if (reply.isError) {
       Navigator.pop(context);
       print(reply.msg);
-    } else if (reply.msg.length == 4) {
+    } else if (reply.msg.toString().length == 4) {
+      print(reply.msg);
       // return a moving chess from opponent , example : "a0a1"
       // parser respone
-      List<int> index = reply.msg.codeUnits;
-      // from character to index of row
-      index[0] -= 97;
-      index[3] -= 97;
+      List<int> index = reply.msg.toString().codeUnits;
+      print(index);
       // if player color is red , rotate index of board
-      int from = playerColor == 1
-          ? index[0] + index[1] * 9
-          : 89 - index[0] - index[1] * 9;
-      int to = playerColor == 1
-          ? index[2] + index[3] * 9
-          : 89 - index[2] - index[3] * 9;
+      int from = playerColor == -1
+          ? (index[0] - 97) + int.parse(reply.msg[1]) * 9
+          : 89 - (index[0] - 97) - int.parse(reply.msg[1]) * 9;
+      int to = playerColor == -1
+          ? index[2] - 97 + int.parse(reply.msg[3]) * 9
+          : 89 - index[2] + 97 - int.parse(reply.msg[3]) * 9;
       // update chess board
-      chessMoving(from, to);
+      print(from);
+      print(to);
+      int type = board[from ~/ 9][from % 9];
+      setState(() {
+        board[from ~/ 9][from % 9] = 0;
+      });
+      chessMoving(from, to, type);
     } else if (reply.msg.contains("boards")) {
     } else {
       print(reply.msg);
     }
   }
 
-  void subscribeGame() async {
+  // listen reply from the server
+  void listenGameReply() async {
     try {
-      await for (GameCommonReply respone
-          in GameService().subscribeGame(widget.gameId, widget.playerId)) {
-        print("reply from server : $respone");
-        print("reply : ${respone.msg}");
-        onreply(respone);
+      await for (GameCommonReply gameReply in widget.gameService) {
+        print("=======================");
+        print("reply from server : $gameReply");
+        onreply(gameReply);
       }
     } catch (e) {
       print(e);
-      showalert("Something went wrong, please check your connection");
+      showalert("Lỗi");
     }
   }
 
-  void chessMoving(int from, int to) {
-    int type = board[from ~/ 9][to % 9];
+  void chessMoving(int from, int to, int type) {
+    print("moving from $from , to $to");
     Size source = cellToPositon(from);
     Size target = cellToPositon(to);
     String pre = type < 0 ? "b_" : "r_";
@@ -223,13 +229,18 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
 
   // when frontend render complete , subcribe to the server
   // if something wrong when subcribe, pop context and respone error
-  @override
-  void initState() {
+  void executeAfterBuildComplete() {
+    gameId = widget.gameId;
     playerColor = widget.playerColor;
     playerId = widget.playerId;
-    gameId = widget.gameId;
-    subscribeGame();
+    listenGameReply();
+  }
+
+  @override
+  void initState() {
     super.initState();
+    WidgetsBinding.instance!
+        .addPostFrameCallback((_) => executeAfterBuildComplete());
   }
 
   @override
@@ -238,8 +249,9 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     widthScreen = size.width;
     heightScreen = size.height;
     double cell = size.width / 12;
-    if (playerColor == -1 && rotateCount == 0) {
+    if (widget.playerColor == 1 && rotateCount == 0) {
       rotateBoard(board);
+      print(board);
       rotateCount += 1;
     }
     return Container(

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/component/RoomService.dart';
+import 'package:frontend/component/gameService.dart';
 import 'package:frontend/constant/color.dart';
+import 'package:frontend/generated/game/game.pb.dart';
 import 'package:frontend/generated/room/room.pb.dart';
 import 'package:frontend/screens/components/Chat.dart';
 import 'package:frontend/screens/components/PlayingBackground.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
+import 'package:frontend/screens/playinggame/PlayingGameScreen.dart';
 
 class NewRoomScreen extends StatefulWidget {
   final bool ishost;
@@ -23,6 +26,7 @@ class NewRoomScreen extends StatefulWidget {
 
 class _NewRoomScreenState extends State<NewRoomScreen> {
   RoomService roomService = RoomService();
+  GameService gameService = GameService();
   var chats = [];
   // 0 if you, 1 if opponent
   var chatColors = [];
@@ -34,7 +38,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   String hostId = "";
   String chattingMessage = "";
 
-  var playerNames = ["player 1", "player 2"];
+  var Ids = ["player 1", "player 2"];
 
   // control chat field and clean when submit
   var chatController = TextEditingController();
@@ -47,7 +51,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
       // get info host
       getInfoById(playerList[0]);
       setState(() {
-        playerNames[0] = playerList[0];
+        Ids[0] = playerList[0];
         roomId = _roomId;
       });
     } else {
@@ -59,8 +63,8 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
         getInfoById(_hostid);
         getInfoById(widget.playerId);
         setState(() {
-          playerNames[0] = _hostid;
-          playerNames[1] = widget.playerId;
+          Ids[0] = _hostid;
+          Ids[1] = widget.playerId;
           roomId = _roomId;
           have_opponent = true;
         });
@@ -97,7 +101,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
       // something with game
       // get gameId
       var gameId = roomMessage.msg.split(":")[1];
-      subscribeGame(gameId);
+      subcribeGame(gameId);
     } else if (roomMessage.type.toString() == "Chat") {
       // chat message
       var msgs = roomMessage.msg.toString().split(":");
@@ -112,17 +116,47 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
     }
   }
 
-  void subscribeGame(String gameId) {
-    // subscribe a game
+  // when is clicking the start button
+  void startGame() async {
+    try {
+      var respone = await roomService.roomStartGame(roomId, playerId);
+      if (respone.type.toString() == "Error") {
+        showalert("Chưa thể bắt đầu game");
+      }
+    } catch (e) {
+      print(e);
+      showalert("Lỗi");
+    }
   }
 
-  void startGame() {}
+  // subcribe game
+  // when host click start button, server will respone message to bolth host and client
+  // so this funtion will be run
+  void subcribeGame(String gameId) {
+    String opponentsId = widget.ishost ? Ids[1] : Ids[0];
+    int playerColor = widget.ishost ? 1 : -1;
+    Stream<GameCommonReply> subscribeGame =
+        gameService.subscribeGame(gameId, playerId);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlayingGameScreen(
+          gameId: gameId,
+          playerId: playerId,
+          opponentsId: opponentsId,
+          playerColor: playerColor,
+          chatService: widget.roomMesasge,
+          gameService: subscribeGame,
+        ),
+      ),
+    );
+  }
 
   void newPlayer(String playerId) {
     // Toto : get info player and put when complete
     setState(() {
       if (widget.ishost) {
-        playerNames[1] = playerId.toString();
+        Ids[1] = playerId.toString();
         have_opponent = true;
       }
     });
@@ -221,8 +255,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
                                     AssetImage("assets/images/profile.png"))),
                       ),
                       SizedBox(height: size.width * 0.04),
-                      Text(playerNames[0],
-                          style: TextStyle(fontSize: 18, color: light))
+                      Text(Ids[0], style: TextStyle(fontSize: 18, color: light))
                     ],
                   ),
                 ),
@@ -255,7 +288,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
                                           "assets/images/profile.png"))),
                             ),
                             SizedBox(height: size.width * 0.04),
-                            Text(playerNames[1],
+                            Text(Ids[1],
                                 style: TextStyle(fontSize: 18, color: light))
                           ],
                         ))),
