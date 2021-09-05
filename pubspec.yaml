@@ -32,6 +32,7 @@ dependencies:
   protobuf: ^2.0.0
   grpc: ^3.0.2
   flutter_facebook_login: ^3.0.0
+  keyboard_visibility: ^0.5.2
 
 dev_dependencies:
   flutter_test:

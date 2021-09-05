@@ -7,6 +7,7 @@ import 'package:frontend/generated/room/room.pb.dart';
 import 'package:frontend/screens/components/Chat.dart';
 import 'package:frontend/screens/components/PlayingBackground.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
+import 'package:frontend/screens/components/SingletonChatReceiver.dart';
 import 'package:frontend/screens/playinggame/PlayingGameScreen.dart';
 
 class NewRoomScreen extends StatefulWidget {
@@ -37,6 +38,8 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   String playerId = "";
   String hostId = "";
   String chattingMessage = "";
+
+  SingletonChatReceiver chatReceiver = SingletonChatReceiver();
 
   var Ids = ["player 1", "player 2"];
 
@@ -106,6 +109,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
       // chat message
       var msgs = roomMessage.msg.toString().split(":");
       if (msgs.length >= 2 && msgs[0] != widget.playerId) {
+        chatReceiver.data = msgs[1];
         setState(() {
           chats.add(Chat(message: msgs[1], username: msgs[0]));
           chatColors.add(1);
@@ -147,6 +151,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
           playerColor: playerColor,
           chatService: widget.roomMesasge,
           gameService: subscribeGame,
+          roomId: roomId,
         ),
       ),
     );
@@ -183,10 +188,11 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
 
   void sendChat(String msg) async {
     try {
-      print("msg : $msg, playerid: $playerId, roomid: $roomId");
+      print(
+          "send chat to server: msg : $msg, playerid: $playerId, roomid: $roomId");
       var responne = await roomService.sendChat(msg, playerId, roomId);
       if (responne.success.toString() != "success") {
-        showalert("sending fail");
+        showalert("Không gửi được");
       } else {
         chattingMessage = "";
         chatController.clear();

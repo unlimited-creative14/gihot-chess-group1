@@ -1,21 +1,28 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/component/GameService.dart';
+import 'package:frontend/component/RoomService.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/generated/game/game.pb.dart';
 import 'package:frontend/generated/room/room.pb.dart';
+import 'package:frontend/screens/components/SingletonChatReceiver.dart';
+// ignore: import_of_legacy_library_into_null_safe
+import 'package:keyboard_visibility/keyboard_visibility.dart';
 
 class PlayingGameScreen extends StatefulWidget {
   final String gameId;
   final String playerId;
   final String opponentsId;
   final int playerColor;
+  final String roomId;
   final Stream<RoomMessage> chatService;
   final Stream<GameCommonReply> gameService;
   PlayingGameScreen(
       {Key? key,
       required this.gameId,
+      required this.roomId,
       required this.playerId,
       required this.opponentsId,
       required this.playerColor,
@@ -32,10 +39,34 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   int playerColor = -1;
   int pickedIdx = -1;
   GameService gameService = GameService();
+  RoomService roomService = RoomService();
   String gameId = "";
   String playerId = "";
   String source = "", target = "";
   int rotateCount = 0;
+
+  // waiting for opponent join this game
+  bool waiting = true;
+
+  var chatController = TextEditingController();
+  SingletonChatReceiver chatReceiver = SingletonChatReceiver();
+
+  // init some field of pointer animation
+  // when chess moving, pointer is moved
+  double widthScreen = 0;
+  double heightScreen = 0;
+  String pointerurl = "assets/icons/r_sodier.svg";
+  bool pointerVisiable = false;
+  double pointerTop = 0;
+  double poineterLeft = 0;
+
+  // init some field for chat text
+  double chatHeight = 0;
+  int chatFocus = 0;
+  String chattingMessage = "";
+
+  bool playerChat = false, opponentsChat = false;
+  String playerChatMsg = "", oppnentsChatMsg = "";
 
   var chessDetail = [
     "chariot",
@@ -46,9 +77,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     "cannon",
     "sodier"
   ];
-
-  // waiting for opponent join this game
-  bool waiting = true;
 
   var board = [
     [1, 2, 3, 4, 5, 4, 3, 2, 1],
@@ -75,7 +103,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   }
 
   void tap(int index) async {
-    print("index :$index");
     if (pickedIdx == -1 && playerColor * board[index ~/ 9][index % 9] > 0) {
       setState(() {
         pickedIdx = index;
@@ -139,7 +166,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
       // return a moving chess from opponent , example : "a0a1"
       // parser respone
       List<int> index = reply.msg.toString().codeUnits;
-      print(index);
       // if player color is red , rotate index of board
       int from = playerColor == -1
           ? (index[0] - 97) + int.parse(reply.msg[1]) * 9
@@ -148,8 +174,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
           ? index[2] - 97 + int.parse(reply.msg[3]) * 9
           : 89 - index[2] + 97 - int.parse(reply.msg[3]) * 9;
       // update chess board
-      print(from);
-      print(to);
       int type = board[from ~/ 9][from % 9];
       setState(() {
         board[from ~/ 9][from % 9] = 0;
@@ -161,12 +185,10 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     }
   }
 
-  // listen reply from the server
+  // listen game service from the server
   void listenGameReply() async {
     try {
       await for (GameCommonReply gameReply in widget.gameService) {
-        print("=======================");
-        print("reply from server : $gameReply");
         onreply(gameReply);
       }
     } catch (e) {
@@ -175,8 +197,56 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     }
   }
 
+  // receive chat from opponents
+  void receiveChat(String message) {
+    // put message into screen
+    setState(() {
+      oppnentsChatMsg = message;
+      opponentsChat = true;
+    });
+    Timer.periodic(Duration(seconds: 5), (timer) {
+      if (message == oppnentsChatMsg) {
+        if (mounted) {
+          setState(() {
+            opponentsChat = false;
+          });
+        }
+      }
+      timer.cancel();
+    });
+  }
+
+  void sendChat(String msg) async {
+    try {
+      var respone = await roomService.sendChat(msg, playerId, widget.roomId);
+      if (respone.success.toString() != "success") {
+        showalert("Không gửi được");
+      } else {
+        // send successfull
+        // clear chat message
+        chatController.clear();
+        // show into screen with respone message
+        setState(() {
+          playerChatMsg = msg;
+          playerChat = true;
+        });
+        Timer.periodic(Duration(seconds: 5), (timer) {
+          if (msg == playerChatMsg) {
+            if (mounted) {
+              setState(() {
+                playerChat = false;
+              });
+            }
+          }
+          timer.cancel();
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   void chessMoving(int from, int to, int type) {
-    print("moving from $from , to $to");
     Size source = cellToPositon(from);
     Size target = cellToPositon(to);
     String pre = type < 0 ? "b_" : "r_";
@@ -200,15 +270,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
       });
     });
   }
-
-  // init some field of pointer animation
-  // when chess moving, pointer is moved
-  double widthScreen = 0;
-  double heightScreen = 0;
-  String pointerurl = "assets/icons/r_sodier.svg";
-  bool pointerVisiable = false;
-  double pointerTop = 0;
-  double poineterLeft = 0;
 
   Size cellToPositon(int cell) {
     double x = 0, y = 0;
@@ -236,9 +297,33 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     listenGameReply();
   }
 
+  void showHideKeyboard(bool visible) {
+    if (visible) {
+      setState(() {
+        chatFocus = 1;
+      });
+    } else {
+      setState(() {
+        chatFocus = 0;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    // listening the keyboard
+    KeyboardVisibilityNotification().addNewListener(
+      onChange: (bool visible) {
+        showHideKeyboard(visible);
+      },
+    );
+    //listen onchange data from chat service
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      if (chatReceiver.data != oppnentsChatMsg) {
+        receiveChat(chatReceiver.data);
+      }
+    });
     WidgetsBinding.instance!
         .addPostFrameCallback((_) => executeAfterBuildComplete());
   }
@@ -248,30 +333,72 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     Size size = MediaQuery.of(context).size;
     widthScreen = size.width;
     heightScreen = size.height;
-    double cell = size.width / 12;
+    chatHeight = (heightScreen - 12 * widthScreen / 9) / 2;
+    double cell = size.width / 10;
     if (widget.playerColor == 1 && rotateCount == 0) {
       rotateBoard(board);
-      print(board);
       rotateCount += 1;
     }
     return Container(
       child: Scaffold(
-        body: Stack(
-          children: [
-            Center(
-                child: Container(
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage("assets/images/board.png"),
-                            fit: BoxFit.fitWidth)))),
-            Center(
-              child: Container(
+        resizeToAvoidBottomInset: false,
+        body: Container(
+          height: size.height,
+          width: size.width,
+          child: Stack(
+            children: [
+              Container(
+                height: size.height,
                 width: size.width,
-                height: 11.2 * size.width / 9,
-                child: GridView.count(
-                  crossAxisCount: 9,
-                  children: List.generate(90, (index) {
-                    if (board[index ~/ 9][index % 9] == 0) {
+                color: Colors.blue,
+              ),
+              Container(
+                height: size.height,
+                width: size.width,
+                color: Colors.black54,
+              ),
+              Center(
+                child: Container(
+                  height: 10 * size.width / 9,
+                  width: size.width,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage("assets/images/board.png"),
+                          fit: BoxFit.fitWidth),
+                    ),
+                  ),
+                ),
+              ),
+              Center(
+                child: Container(
+                  width: size.width,
+                  height: 10 * size.width / 9,
+                  child: GridView.count(
+                    crossAxisCount: 9,
+                    padding: EdgeInsets.all(0),
+                    children: List.generate(90, (index) {
+                      if (board[index ~/ 9][index % 9] == 0) {
+                        return Center(
+                          child: Container(
+                            width: cell,
+                            height: cell,
+                            child: GestureDetector(
+                              onTap: () {
+                                tap(index);
+                              }, // style: Theme.of(context).textTheme.headline5,
+                            ),
+                          ),
+                        );
+                      }
+                      String prefix = "r_";
+                      Color picked_color = picked_green;
+                      if (board[index ~/ 9][index % 9] < 0) {
+                        prefix = "b_";
+                        picked_color = picked_red;
+                      }
+                      bool ispicked = false;
+                      if (pickedIdx == index) ispicked = true;
                       return Center(
                         child: Container(
                           width: cell,
@@ -279,29 +406,9 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
                           child: GestureDetector(
                             onTap: () {
                               tap(index);
-                            }, // style: Theme.of(context).textTheme.headline5,
-                          ),
-                        ),
-                      );
-                    }
-                    String prefix = "r_";
-                    Color picked_color = picked_green;
-                    if (board[index ~/ 9][index % 9] < 0) {
-                      prefix = "b_";
-                      picked_color = picked_red;
-                    }
-                    bool ispicked = false;
-                    if (pickedIdx == index) ispicked = true;
-                    return Center(
-                      child: Container(
-                        width: cell,
-                        height: cell,
-                        child: GestureDetector(
-                          onTap: () {
-                            tap(index);
-                          },
-                          // child: SvgPicture.asset("assets/icons/r_advisor.svg"),
-                          child: Stack(
+                            },
+                            // child: SvgPicture.asset("assets/icons/r_advisor.svg"),
+                            child: Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
                                 Visibility(
@@ -323,41 +430,146 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
                                   width: cell * 0.9,
                                   height: cell * 0.9,
                                 ),
-                              ]),
+                              ],
+                            ),
+                          ),
+                          // style: Theme.of(context).textTheme.headline5,
                         ),
-                        // style: Theme.of(context).textTheme.headline5,
-                      ),
-                    );
-                  }),
+                      );
+                    }),
+                  ),
                 ),
               ),
-            ),
-            Positioned(
-                bottom: 0,
-                child: Container(
-                  height: size.height * 0.1,
-                  width: size.width,
-                  color: light,
-                  child: Row(
-                    children: [Text("data"), Text("data1")],
-                  ),
-                )),
-            Visibility(
+              Visibility(
                 visible: pointerVisiable,
                 child: Positioned(
-                    top: pointerTop,
-                    left: poineterLeft,
-                    child: Container(
-                      width: size.width / 9,
-                      height: size.width / 9,
-                      child: Center(
-                          child: SvgPicture.asset(
+                  top: pointerTop,
+                  left: poineterLeft,
+                  child: Container(
+                    width: size.width / 9,
+                    height: size.width / 9,
+                    child: Center(
+                      child: SvgPicture.asset(
                         pointerurl,
                         width: 0.9 * size.width / 12,
                         height: 0.9 * size.width / 12,
-                      )),
-                    )))
-          ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(
+                    0, size.height - chatHeight - chatFocus * 280, 0, 0),
+                decoration: BoxDecoration(
+                    color: Colors.black38,
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+                height: chatHeight,
+                padding: EdgeInsets.all(20),
+                child: TextField(
+                  onChanged: (text) {
+                    if (text.length > 35) {
+                      chatController.text = chattingMessage;
+                    } else
+                      chattingMessage = text;
+                  },
+                  style: TextStyle(color: Colors.white),
+                  controller: chatController,
+                  decoration: InputDecoration(
+                    hintStyle: TextStyle(color: Colors.white60),
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        sendChat(chattingMessage);
+                      },
+                      child: Icon(
+                        Icons.send,
+                        color: Colors.cyan,
+                      ),
+                    ),
+                    hintText: "Type message here",
+                    fillColor: Colors.white,
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.cyan),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.cyan),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                height: (size.height - 10 * size.width / 9) / 2,
+                width: size.width,
+                color: Colors.black12,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 25),
+                    Visibility(
+                      visible: playerChat,
+                      child: Container(
+                        width: size.width * 0.9,
+                        margin: EdgeInsets.fromLTRB(0, 0, size.width * 0.1, 0),
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                            color: light,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(15))),
+                        child: RichText(
+                          text: TextSpan(
+                              text: playerId + " : ",
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold),
+                              children: [
+                                TextSpan(
+                                    text: playerChatMsg,
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.normal))
+                              ]),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 5),
+                    Visibility(
+                      visible: opponentsChat,
+                      child: Container(
+                        margin: EdgeInsets.fromLTRB(size.width * 0.1, 0, 0, 0),
+                        width: size.width * 0.9,
+                        padding: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: light,
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(15),
+                          ),
+                        ),
+                        child: RichText(
+                          text: TextSpan(
+                              text: widget.opponentsId + " : ",
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold),
+                              children: [
+                                TextSpan(
+                                  text: oppnentsChatMsg,
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.normal),
+                                )
+                              ]),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
