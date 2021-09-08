@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend/component/BackgroundMusic.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
 import 'package:frontend/screens/components/WelcomeBackground.dart';
 import 'package:frontend/screens/playgame/RoomScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  double volume = 1;
+  bool setting = false;
+  BackgroundMusic backgroundMusic = BackgroundMusic();
+  late final SharedPreferences pref;
 
   void start(context) {
     Navigator.push(
@@ -23,6 +33,34 @@ class HomeScreen extends StatelessWidget {
 
   void introduction(context) {
     //
+  }
+
+  void openSetting() {
+    setState(() {
+      setting = !setting;
+    });
+  }
+
+  void changeVolume(double value) {
+    setState(() {
+      volume = value;
+    });
+    backgroundMusic.changeVolume(value);
+    pref.setDouble("volume", value);
+  }
+
+  void executeAfterBuildComplete() async {
+    pref = await SharedPreferences.getInstance();
+    setState(() {
+      volume = pref.getDouble("volume") ?? 1;
+    });
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance!
+        .addPostFrameCallback((_) => executeAfterBuildComplete());
+    super.initState();
   }
 
   @override
@@ -83,6 +121,36 @@ class HomeScreen extends StatelessWidget {
                       onpress: () {
                         introduction(context);
                       })),
+              SizedBox(height: size.height * 0.02),
+              Container(
+                width: size.width * 0.8,
+                child: RoundedButton(
+                  text: "Cài đặt",
+                  onpress: () {
+                    openSetting();
+                  },
+                ),
+              ),
+              SizedBox(height: size.height * 0.02),
+              Visibility(
+                  visible: setting,
+                  child: Container(
+                    width: size.width * 0.8,
+                    child: Row(
+                      children: [
+                        Text("Âm lượng",
+                            style: TextStyle(fontSize: 18, color: light)),
+                        Slider(
+                            value: volume,
+                            min: 0,
+                            max: 1,
+                            divisions: 5,
+                            onChanged: (double value) {
+                              changeVolume(value);
+                            })
+                      ],
+                    ),
+                  ))
             ],
           ),
         )),

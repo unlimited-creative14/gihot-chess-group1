@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -7,7 +8,6 @@ import 'package:frontend/component/RoomService.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/generated/game/game.pb.dart';
 import 'package:frontend/generated/room/room.pb.dart';
-import 'package:frontend/screens/components/SingletonChatReceiver.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:keyboard_visibility/keyboard_visibility.dart';
 
@@ -49,7 +49,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   bool waiting = true;
 
   var chatController = TextEditingController();
-  SingletonChatReceiver chatReceiver = SingletonChatReceiver();
 
   // init some field of pointer animation
   // when chess moving, pointer is moved
@@ -67,6 +66,13 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
 
   bool playerChat = false, opponentsChat = false;
   String playerChatMsg = "", oppnentsChatMsg = "";
+
+  // variables for some music
+  AudioCache boomAudio = AudioCache();
+  AudioCache clickAudio = AudioCache();
+
+  var listenChat;
+  var listenGame;
 
   var chessDetail = [
     "chariot",
@@ -106,6 +112,11 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     if (pickedIdx == -1 && playerColor * board[index ~/ 9][index % 9] > 0) {
       setState(() {
         pickedIdx = index;
+        try {
+          clickAudio.play("musics/click.wav");
+        } catch (e) {
+          print(e);
+        }
       });
     } else if (pickedIdx != -1 && pickedIdx == index) {
       setState(() {
@@ -153,6 +164,11 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
       setState(() {
         pickedIdx = index;
       });
+      try {
+        clickAudio.play("musics/click.wav");
+      } catch (e) {
+        print(e);
+      }
     }
   }
 
@@ -179,7 +195,19 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
         board[from ~/ 9][from % 9] = 0;
       });
       chessMoving(from, to, type);
-    } else if (reply.msg.contains("boards")) {
+    } else if (reply.msg.contains("broadcast")) {
+      var msgs = reply.msg.toString().split(":");
+      if (msgs[1] == "startgame") {
+        // start game
+        Timer.periodic(Duration(seconds: 1), (timer) {
+          if (mounted) {
+            setState(() {
+              waiting = false;
+            });
+            timer.cancel();
+          }
+        });
+      }
     } else {
       print(reply.msg);
     }
@@ -188,12 +216,16 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   // listen game service from the server
   void listenGameReply() async {
     try {
-      await for (GameCommonReply gameReply in widget.gameService) {
-        onreply(gameReply);
-      }
+      listenGame = widget.gameService.listen((event) {
+        onreply(event);
+      });
     } catch (e) {
       print(e);
       showalert("Lỗi");
+      Timer.periodic(Duration(seconds: 2), (timer) {
+        Navigator.pop(context);
+        timer.cancel();
+      });
     }
   }
 
@@ -262,6 +294,14 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
         if (idx == 5) {
           timer.cancel();
           pointerVisiable = false;
+          if (board[to ~/ 9][to % 9] != 0) {
+            // boom sound
+            try {
+              clickAudio.play("musics/boom.wav");
+            } catch (e) {
+              print(e);
+            }
+          }
           board[to ~/ 9][to % 9] = type;
         }
         poineterLeft += x_step;
@@ -309,6 +349,17 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     }
   }
 
+  void listenChatMessage() {
+    try {
+      listenChat = widget.chatService.listen((event) {
+        var msgs = event.msg.toString().split(":");
+        if (msgs[0] != playerId) receiveChat(msgs[1]);
+      });
+    } catch (e) {
+      print("Error listen chat: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -319,13 +370,19 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
       },
     );
     //listen onchange data from chat service
-    Timer.periodic(Duration(seconds: 1), (timer) {
-      if (chatReceiver.data != oppnentsChatMsg) {
-        receiveChat(chatReceiver.data);
-      }
-    });
+    listenChatMessage();
     WidgetsBinding.instance!
         .addPostFrameCallback((_) => executeAfterBuildComplete());
+  }
+
+  @override
+  void dispose() {
+    // stop listen
+    listenChat.cancel();
+    listenGame.cancel();
+    // unsubscribe game
+    // TODO
+    super.dispose();
   }
 
   @override
@@ -339,6 +396,7 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
       rotateBoard(board);
       rotateCount += 1;
     }
+    print(waiting);
     return Container(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
@@ -564,10 +622,24 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
                               ]),
                         ),
                       ),
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
+              Visibility(
+                visible: waiting,
+                child: Container(
+                  height: size.height,
+                  width: size.width,
+                  color: bg_dark,
+                  child: Center(
+                    child: Text(
+                      "Vui lòng đợi đối thủ",
+                      style: TextStyle(fontSize: 25, color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

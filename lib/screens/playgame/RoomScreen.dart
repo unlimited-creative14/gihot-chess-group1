@@ -21,6 +21,7 @@ class _RoomScreenState extends State<RoomScreen> {
   int counting = 0;
   bool stopTimer = false;
   RoomService roomService = RoomService();
+  var findroomListener;
 
   void changeWaitingState(bool targetState) {
     setState(() {
@@ -55,7 +56,7 @@ class _RoomScreenState extends State<RoomScreen> {
       print("roomId : ${respone.roomId}");
       // join room
       Stream<RoomMessage> joinroom =
-          roomService.joinRoom(respone.roomId, playerId);
+          roomService.joinRoom(respone.roomId, playerId).asBroadcastStream();
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -73,18 +74,26 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
   // when client click findgame button
-  void findroom(String roomId) async {
-    Stream<RoomMessage> joinroom = roomService.joinRoom(roomId, playerId);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => NewRoomScreen(
-          playerId: playerId,
-          roomMesasge: joinroom,
-          ishost: false,
-        ),
-      ),
-    );
+  void findroom(String roomId) {
+    Stream<RoomMessage> joinroom = roomService.joinRoom(roomId, playerId)
+      ..asBroadcastStream();
+    findroomListener = joinroom.listen((event) {
+      if (event.type.toString() == "Error") {
+        alertMsg("Không tìm thấy phòng này");
+      } else {
+        findroomListener.cancel();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => NewRoomScreen(
+              playerId: playerId,
+              roomMesasge: joinroom,
+              ishost: false,
+            ),
+          ),
+        );
+      }
+    });
   }
 
   void alertMsg(String message) {

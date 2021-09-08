@@ -7,7 +7,6 @@ import 'package:frontend/generated/room/room.pb.dart';
 import 'package:frontend/screens/components/Chat.dart';
 import 'package:frontend/screens/components/PlayingBackground.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
-import 'package:frontend/screens/components/SingletonChatReceiver.dart';
 import 'package:frontend/screens/playinggame/PlayingGameScreen.dart';
 
 class NewRoomScreen extends StatefulWidget {
@@ -39,13 +38,12 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   String hostId = "";
   String chattingMessage = "";
 
-  SingletonChatReceiver chatReceiver = SingletonChatReceiver();
-
   var Ids = ["player 1", "player 2"];
 
   // control chat field and clean when submit
   var chatController = TextEditingController();
 
+  var listenRoomMessage;
   void getInfoById(String id) {}
 
   void initialData(var playerList, String _roomId) {
@@ -109,7 +107,6 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
       // chat message
       var msgs = roomMessage.msg.toString().split(":");
       if (msgs.length >= 2 && msgs[0] != widget.playerId) {
-        chatReceiver.data = msgs[1];
         setState(() {
           chats.add(Chat(message: msgs[1], username: msgs[0]));
           chatColors.add(1);
@@ -177,12 +174,12 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
 
   void listenMessage() async {
     try {
-      await for (RoomMessage message in widget.roomMesasge) {
-        onreply(message);
-      }
+      listenRoomMessage = widget.roomMesasge.listen((event) {
+        onreply(event);
+      });
     } catch (e) {
       print(e);
-      showalert("disconnected !");
+      Navigator.pop(context);
     }
   }
 
@@ -216,6 +213,13 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
     super.initState();
     WidgetsBinding.instance!
         .addPostFrameCallback((_) => executeAfterBuildComplete());
+  }
+
+  @override
+  void dispose() {
+    // unsubscribe stream
+    listenRoomMessage.cancel();
+    super.dispose();
   }
 
   @override
