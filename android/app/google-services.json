@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "653470468763",
+    "project_id": "gihot-a64d0",
+    "storage_bucket": "gihot-a64d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:653470468763:android:ed5135bf33acb74b63943e",
+        "android_client_info": {
+          "package_name": "com.example.frontend"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "653470468763-q0d3q99hhjm27fpsp7ufo2mgtj5tsubl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBp3Pusju43FBMHAeUL56KJqyDITHcmcc8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "653470468763-q0d3q99hhjm27fpsp7ufo2mgtj5tsubl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

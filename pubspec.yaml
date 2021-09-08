@@ -35,6 +35,8 @@ dependencies:
   keyboard_visibility: ^0.5.2
   audioplayers: ^0.20.0
   shared_preferences: ^2.0.7
+  google_sign_in: ^5.1.0
+  http: ^0.13.3
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "vn.gihot.chess.gserver.message.UserMessage";
+
+message UserInfoRequest {
+  string username = 1;
+}
+
+message UserInfoReply {
+  string success = 1;
+  string username = 2;
+  int32 gameCurrency = 3;
+  repeated string friendList_id = 4;
+  string status = 5;
+}
+
+
+service UserService {
+  rpc getUserInfo(UserInfoRequest) returns (UserInfoReply);
+}
