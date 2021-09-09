@@ -8,6 +8,7 @@ import 'package:frontend/screens/components/TextContainer.dart';
 import 'package:frontend/screens/components/WelcomeBackground.dart';
 import 'package:frontend/screens/home/HomeScreen.dart';
 import 'package:frontend/screens/signup/SignupScreen.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:frontend/component/UserInfo.dart';
 import 'dart:convert' show json;
@@ -21,7 +22,6 @@ GoogleSignIn _googleSignIn = GoogleSignIn(
     'https://www.googleapis.com/auth/contacts.readonly',
   ],
 );
-
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -85,12 +85,12 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _pickFirstNamedContact(Map<String, dynamic> data) {
     final List<dynamic>? connections = data['connections'];
     final Map<String, dynamic>? contact = connections?.firstWhere(
-          (dynamic contact) => contact['names'] != null,
+      (dynamic contact) => contact['names'] != null,
       orElse: () => null,
     );
     if (contact != null) {
       final Map<String, dynamic>? name = contact['names'].firstWhere(
-            (dynamic name) => name['displayName'] != null,
+        (dynamic name) => name['displayName'] != null,
         orElse: () => null,
       );
       if (name != null) {
@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _googleSignIn.signIn();
       if (_currentUser != null) {
-        UserInfoReply user =  await userService.getUserInfo(_currentUser.id);
+        UserInfoReply user = await userService.getUserInfo(_currentUser!.id);
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => HomeScreen()));
       }
@@ -122,13 +122,12 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<Null> _login() async {
-    final FacebookLoginResult result =
-    await facebookSignIn.logIn(['email']);
+    final FacebookLoginResult result = await facebookSignIn.logIn(['email']);
 
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         final FacebookAccessToken accessToken = result.accessToken;
-        UserInfoReply user =  await userService.getUserInfo(accessToken.userId);
+        UserInfoReply user = await userService.getUserInfo(accessToken.userId);
 
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => HomeScreen()));

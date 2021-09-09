@@ -8,3 +8,4 @@ const bg_transpearent = Color(0x80000000);
 const bg_dark = Color(0xA8000000);
 const picked_red = Color(0xFFFF0000);
 const picked_green = Color(0xFF00FF00);
+const bg_chat = Color(0xA8E8F0F2);

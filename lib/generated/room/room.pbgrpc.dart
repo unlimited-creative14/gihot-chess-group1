@@ -21,17 +21,17 @@ class RoomServiceClient extends $grpc.Client {
           ($0.RoomCommonRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.RoomCommonReply.fromBuffer(value));
-  static final _$destroyRoom =
-      $grpc.ClientMethod<$0.RoomCommonRequest, $0.RoomCommonReply>(
-          '/RoomService/DestroyRoom',
-          ($0.RoomCommonRequest value) => value.writeToBuffer(),
-          ($core.List<$core.int> value) =>
-              $0.RoomCommonReply.fromBuffer(value));
   static final _$joinRoom =
       $grpc.ClientMethod<$0.RoomCommonRequest, $0.RoomMessage>(
           '/RoomService/JoinRoom',
           ($0.RoomCommonRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) => $0.RoomMessage.fromBuffer(value));
+  static final _$leaveRoom =
+      $grpc.ClientMethod<$0.RoomCommonRequest, $0.RoomCommonReply>(
+          '/RoomService/LeaveRoom',
+          ($0.RoomCommonRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.RoomCommonReply.fromBuffer(value));
   static final _$getInfoRoom =
       $grpc.ClientMethod<$0.RoomInfoRequest, $0.RoomInfoReply>(
           '/RoomService/GetInfoRoom',
@@ -64,17 +64,17 @@ class RoomServiceClient extends $grpc.Client {
     return $createUnaryCall(_$createRoom, request, options: options);
   }
 
-  $grpc.ResponseFuture<$0.RoomCommonReply> destroyRoom(
-      $0.RoomCommonRequest request,
-      {$grpc.CallOptions? options}) {
-    return $createUnaryCall(_$destroyRoom, request, options: options);
-  }
-
   $grpc.ResponseStream<$0.RoomMessage> joinRoom($0.RoomCommonRequest request,
       {$grpc.CallOptions? options}) {
     return $createStreamingCall(
         _$joinRoom, $async.Stream.fromIterable([request]),
         options: options);
+  }
+
+  $grpc.ResponseFuture<$0.RoomCommonReply> leaveRoom(
+      $0.RoomCommonRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$leaveRoom, request, options: options);
   }
 
   $grpc.ResponseFuture<$0.RoomInfoReply> getInfoRoom($0.RoomInfoRequest request,
@@ -110,13 +110,6 @@ abstract class RoomServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.RoomCommonRequest.fromBuffer(value),
         ($0.RoomCommonReply value) => value.writeToBuffer()));
-    $addMethod($grpc.ServiceMethod<$0.RoomCommonRequest, $0.RoomCommonReply>(
-        'DestroyRoom',
-        destroyRoom_Pre,
-        false,
-        false,
-        ($core.List<$core.int> value) => $0.RoomCommonRequest.fromBuffer(value),
-        ($0.RoomCommonReply value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RoomCommonRequest, $0.RoomMessage>(
         'JoinRoom',
         joinRoom_Pre,
@@ -124,6 +117,13 @@ abstract class RoomServiceBase extends $grpc.Service {
         true,
         ($core.List<$core.int> value) => $0.RoomCommonRequest.fromBuffer(value),
         ($0.RoomMessage value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.RoomCommonRequest, $0.RoomCommonReply>(
+        'LeaveRoom',
+        leaveRoom_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.RoomCommonRequest.fromBuffer(value),
+        ($0.RoomCommonReply value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RoomInfoRequest, $0.RoomInfoReply>(
         'GetInfoRoom',
         getInfoRoom_Pre,
@@ -159,14 +159,14 @@ abstract class RoomServiceBase extends $grpc.Service {
     return createRoom(call, await request);
   }
 
-  $async.Future<$0.RoomCommonReply> destroyRoom_Pre($grpc.ServiceCall call,
-      $async.Future<$0.RoomCommonRequest> request) async {
-    return destroyRoom(call, await request);
-  }
-
   $async.Stream<$0.RoomMessage> joinRoom_Pre($grpc.ServiceCall call,
       $async.Future<$0.RoomCommonRequest> request) async* {
     yield* joinRoom(call, await request);
+  }
+
+  $async.Future<$0.RoomCommonReply> leaveRoom_Pre($grpc.ServiceCall call,
+      $async.Future<$0.RoomCommonRequest> request) async {
+    return leaveRoom(call, await request);
   }
 
   $async.Future<$0.RoomInfoReply> getInfoRoom_Pre(
@@ -191,9 +191,9 @@ abstract class RoomServiceBase extends $grpc.Service {
 
   $async.Future<$0.RoomCommonReply> createRoom(
       $grpc.ServiceCall call, $0.RoomCommonRequest request);
-  $async.Future<$0.RoomCommonReply> destroyRoom(
-      $grpc.ServiceCall call, $0.RoomCommonRequest request);
   $async.Stream<$0.RoomMessage> joinRoom(
+      $grpc.ServiceCall call, $0.RoomCommonRequest request);
+  $async.Future<$0.RoomCommonReply> leaveRoom(
       $grpc.ServiceCall call, $0.RoomCommonRequest request);
   $async.Future<$0.RoomInfoReply> getInfoRoom(
       $grpc.ServiceCall call, $0.RoomInfoRequest request);
@@ -203,4 +203,45 @@ abstract class RoomServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $0.RoomCommonRequest request);
   $async.Future<$0.RoomCommonReply> sendChat(
       $grpc.ServiceCall call, $0.ChatMessage request);
+}
+
+class PostGameServiceClient extends $grpc.Client {
+  static final _$postGame =
+      $grpc.ClientMethod<$0.PostGameDataRequest, $1.Empty>(
+          '/PostGameService/PostGame',
+          ($0.PostGameDataRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $1.Empty.fromBuffer(value));
+
+  PostGameServiceClient($grpc.ClientChannel channel,
+      {$grpc.CallOptions? options,
+      $core.Iterable<$grpc.ClientInterceptor>? interceptors})
+      : super(channel, options: options, interceptors: interceptors);
+
+  $grpc.ResponseFuture<$1.Empty> postGame($0.PostGameDataRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$postGame, request, options: options);
+  }
+}
+
+abstract class PostGameServiceBase extends $grpc.Service {
+  $core.String get $name => 'PostGameService';
+
+  PostGameServiceBase() {
+    $addMethod($grpc.ServiceMethod<$0.PostGameDataRequest, $1.Empty>(
+        'PostGame',
+        postGame_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.PostGameDataRequest.fromBuffer(value),
+        ($1.Empty value) => value.writeToBuffer()));
+  }
+
+  $async.Future<$1.Empty> postGame_Pre($grpc.ServiceCall call,
+      $async.Future<$0.PostGameDataRequest> request) async {
+    return postGame(call, await request);
+  }
+
+  $async.Future<$1.Empty> postGame(
+      $grpc.ServiceCall call, $0.PostGameDataRequest request);
 }

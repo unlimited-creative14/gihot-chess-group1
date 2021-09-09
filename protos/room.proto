@@ -50,8 +50,8 @@ message ChatMessage
 
 service RoomService {
     rpc CreateRoom(RoomCommonRequest) returns (RoomCommonReply);
-    rpc DestroyRoom(RoomCommonRequest) returns (RoomCommonReply);
     rpc JoinRoom(RoomCommonRequest) returns (stream RoomMessage);
+    rpc LeaveRoom(RoomCommonRequest) returns (RoomCommonReply);
     rpc GetInfoRoom(RoomInfoRequest) returns (RoomInfoReply);
     rpc GetAllRoom(google.protobuf.Empty) returns (RoomListReply);
 
@@ -60,4 +60,23 @@ service RoomService {
 
     // chat room
     rpc SendChat(ChatMessage) returns (RoomCommonReply);
+}
+
+message PostGameDataRequest
+{
+    string room_id = 1;
+    PostGameData data = 2;
+}
+
+message PostGameData
+{
+    string game_id = 1;
+    bool game_ended = 2;
+    // two field below will be set if game is ended(not disconnect)
+    string player_win_id = 3;
+    string player_lose_id = 4;
+}
+
+service PostGameService {
+    rpc PostGame(PostGameDataRequest) returns (google.protobuf.Empty);
 }

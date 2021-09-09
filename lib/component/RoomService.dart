@@ -9,8 +9,10 @@ class RoomService {
     return room.createRoom(RoomCommonRequest()..playerId = playerId);
   }
 
-  Future<RoomCommonReply> destroyRoom(String roomId) {
-    return room.destroyRoom(RoomCommonRequest()..roomId = roomId);
+  Future<RoomCommonReply> leaveRoom(String playerId, String roomId) {
+    return room.leaveRoom(RoomCommonRequest()
+      ..playerId = playerId
+      ..roomId = roomId);
   }
 
   Stream<RoomMessage> joinRoom(String roomId, String playerId) {

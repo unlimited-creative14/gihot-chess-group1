@@ -100,3 +100,27 @@ const ChatMessage$json = const {
 
 /// Descriptor for `ChatMessage`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List chatMessageDescriptor = $convert.base64Decode('CgtDaGF0TWVzc2FnZRIsCgdyZXF1ZXN0GAEgASgLMhIuUm9vbUNvbW1vblJlcXVlc3RSB3JlcXVlc3QSGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZQ==');
+@$core.Deprecated('Use postGameDataRequestDescriptor instead')
+const PostGameDataRequest$json = const {
+  '1': 'PostGameDataRequest',
+  '2': const [
+    const {'1': 'room_id', '3': 1, '4': 1, '5': 9, '10': 'roomId'},
+    const {'1': 'data', '3': 2, '4': 1, '5': 11, '6': '.PostGameData', '10': 'data'},
+  ],
+};
+
+/// Descriptor for `PostGameDataRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List postGameDataRequestDescriptor = $convert.base64Decode('ChNQb3N0R2FtZURhdGFSZXF1ZXN0EhcKB3Jvb21faWQYASABKAlSBnJvb21JZBIhCgRkYXRhGAIgASgLMg0uUG9zdEdhbWVEYXRhUgRkYXRh');
+@$core.Deprecated('Use postGameDataDescriptor instead')
+const PostGameData$json = const {
+  '1': 'PostGameData',
+  '2': const [
+    const {'1': 'game_id', '3': 1, '4': 1, '5': 9, '10': 'gameId'},
+    const {'1': 'game_ended', '3': 2, '4': 1, '5': 8, '10': 'gameEnded'},
+    const {'1': 'player_win_id', '3': 3, '4': 1, '5': 9, '10': 'playerWinId'},
+    const {'1': 'player_lose_id', '3': 4, '4': 1, '5': 9, '10': 'playerLoseId'},
+  ],
+};
+
+/// Descriptor for `PostGameData`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List postGameDataDescriptor = $convert.base64Decode('CgxQb3N0R2FtZURhdGESFwoHZ2FtZV9pZBgBIAEoCVIGZ2FtZUlkEh0KCmdhbWVfZW5kZWQYAiABKAhSCWdhbWVFbmRlZBIiCg1wbGF5ZXJfd2luX2lkGAMgASgJUgtwbGF5ZXJXaW5JZBIkCg5wbGF5ZXJfbG9zZV9pZBgEIAEoCVIMcGxheWVyTG9zZUlk');

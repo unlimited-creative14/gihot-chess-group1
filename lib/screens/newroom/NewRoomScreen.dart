@@ -13,9 +13,13 @@ class NewRoomScreen extends StatefulWidget {
   final bool ishost;
   final Stream<RoomMessage> roomMesasge;
   final String playerId;
+  final String hostId;
+  final String roomId;
   NewRoomScreen(
       {Key? key,
       this.ishost = true,
+      this.roomId = "",
+      this.hostId = "",
       required this.playerId,
       required this.roomMesasge})
       : super(key: key);
@@ -38,42 +42,23 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   String hostId = "";
   String chattingMessage = "";
 
+  // id and image of player
+  // index 0 : host, index 1 : player
   var Ids = ["player 1", "player 2"];
+  var Images = ["assets/images/profile.png", "assets/images/profile.png"];
 
   // control chat field and clean when submit
   var chatController = TextEditingController();
 
   var listenRoomMessage;
+
+  bool ishost = false;
+
+  // get infor player
   void getInfoById(String id) {}
 
-  void initialData(var playerList, String _roomId) {
-    if (widget.ishost) {
-      // if host join this room
-      // get info host
-      getInfoById(playerList[0]);
-      setState(() {
-        Ids[0] = playerList[0];
-        roomId = _roomId;
-      });
-    } else {
-      // if client join this room
-      // get info host and client
-      if (playerList.length > 1) {
-        String _hostid =
-            playerList[0] == widget.playerId ? playerList[1] : playerList[0];
-        getInfoById(_hostid);
-        getInfoById(widget.playerId);
-        setState(() {
-          Ids[0] = _hostid;
-          Ids[1] = widget.playerId;
-          roomId = _roomId;
-          have_opponent = true;
-        });
-      }
-    }
-  }
-
   void onreply(RoomMessage roomMessage) {
+    print("Reply from server: ");
     print(roomMessage);
     print("---------------------------------");
     if (roomMessage.type.toString() == "Error") {
@@ -84,18 +69,17 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
       var msg = roomMessage.msg.split(":");
       if (msg.length == 1) {
         showalert(msg[0]);
+      } else if (msg[0] == "leaveroom") {
+        // when another player leave this roon
+        anotherPlayerLeaveRoom(msg[1]);
       } else {
         // new player join this room
         var playerList = msg[1].split(",");
-        if (roomId == "") {
-          // initial data
-          initialData(playerList, roomMessage.roomId);
-        }
         for (var playerId in playerList) {
           if (playerId != widget.playerId) {
-            // get info this player and put into screeen
+            // new player join this room
             newPlayer(playerId);
-          } else {}
+          }
         }
       }
     } else if (roomMessage.type.toString() == "Game") {
@@ -134,8 +118,8 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   // when host click start button, server will respone message to bolth host and client
   // so this funtion will be run
   void subcribeGame(String gameId) {
-    String opponentsId = widget.ishost ? Ids[1] : Ids[0];
-    int playerColor = widget.ishost ? 1 : -1;
+    String opponentsId = ishost ? Ids[1] : Ids[0];
+    int playerColor = ishost ? 1 : -1;
     Stream<GameCommonReply> subscribeGame =
         gameService.subscribeGame(gameId, playerId);
     Navigator.push(
@@ -157,7 +141,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   void newPlayer(String playerId) {
     // Toto : get info player and put when complete
     setState(() {
-      if (widget.ishost) {
+      if (ishost) {
         Ids[1] = playerId.toString();
         have_opponent = true;
       }
@@ -203,9 +187,65 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
     }
   }
 
+  // some field will be excute when screen loading successfull
   void executeAfterBuildComplete() {
     playerId = widget.playerId;
+    if (mounted) {
+      setState(() {
+        ishost = widget.ishost;
+      });
+    }
+    if (ishost) {
+      // get information of the player
+      if (mounted)
+        setState(() {
+          Ids[0] = widget.playerId;
+          roomId = widget.roomId;
+        });
+    } else {
+      // get information of the player and the opponents
+      if (mounted)
+        setState(() {
+          roomId = widget.roomId;
+          Ids[0] = widget.hostId;
+          Ids[1] = widget.playerId;
+          hostId = widget.hostId;
+          have_opponent = true;
+        });
+    }
+    // listen some room messages
     listenMessage();
+  }
+
+  void anotherPlayerLeaveRoom(String id) {
+    if (ishost) {
+      if (mounted) {
+        setState(() {
+          have_opponent = false;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          ishost = true;
+          have_opponent = false;
+          Ids[0] = playerId;
+        });
+      }
+    }
+  }
+
+  // leave the room
+  void leaveRoomRequest() async {
+    try {
+      var respone = await roomService.leaveRoom(playerId, roomId);
+      if (respone.success.toString() != "success") {
+        // leave this room
+        showalert("Lỗi");
+      }
+    } catch (e) {
+      showalert("Lỗi");
+    }
   }
 
   @override
@@ -219,6 +259,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   void dispose() {
     // unsubscribe stream
     listenRoomMessage.cancel();
+    leaveRoomRequest();
     super.dispose();
   }
 
@@ -260,9 +301,8 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
                         decoration: BoxDecoration(
                             borderRadius:
                                 BorderRadius.circular(size.height * 0.7),
-                            image: DecorationImage(
-                                image:
-                                    AssetImage("assets/images/profile.png"))),
+                            image:
+                                DecorationImage(image: AssetImage(Images[0]))),
                       ),
                       SizedBox(height: size.width * 0.04),
                       Text(Ids[0], style: TextStyle(fontSize: 18, color: light))
@@ -294,8 +334,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
                                   borderRadius:
                                       BorderRadius.circular(size.width * 0.7),
                                   image: DecorationImage(
-                                      image: AssetImage(
-                                          "assets/images/profile.png"))),
+                                      image: AssetImage(Images[1]))),
                             ),
                             SizedBox(height: size.width * 0.04),
                             Text(Ids[1],
@@ -305,7 +344,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
               ]),
               SizedBox(height: size.height * 0.05),
               Visibility(
-                visible: widget.ishost,
+                visible: ishost,
                 replacement: Container(
                   height: size.height * 0.08,
                 ),
@@ -324,10 +363,12 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
                 height: size.height * 0.3,
                 padding: EdgeInsets.all(size.width * 0.05),
                 decoration: BoxDecoration(
-                    color: bg_transpearent,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(size.width * 0.1),
-                        topRight: Radius.circular(size.width * 0.1))),
+                  color: bg_transpearent,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(size.width * 0.1),
+                    topRight: Radius.circular(size.width * 0.1),
+                  ),
+                ),
                 child: ListView.builder(
                     itemCount: chats.length,
                     itemBuilder: (BuildContext context, int index) {
@@ -339,7 +380,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
                       }
                       return RichText(
                           text: TextSpan(
-                              text: chats[index].username + " : ",
+                              text: chats[index].friendList + " : ",
                               style:
                                   TextStyle(fontSize: 16, color: usernameColor),
                               children: [

@@ -1,0 +1,58 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_package = "vn.gihot.chess.gserver.message.LobbyMessage";
+
+message LobbyCommonMessage {
+  string player_id = 1;
+}
+
+message PlayerObject {
+  string player_id = 1;
+  string disp_name = 2;
+
+  bool online = 3;
+}
+message FriendList {
+  repeated PlayerObject friend_list = 1;
+}
+
+message FriendRequest {
+  string id = 1;
+  string player_id = 2;
+  string player_id2 = 3;
+}
+
+message LobbyChatMessage {
+  string player_id = 1;
+  string recv_player_id = 2;
+  string msg = 3;
+}
+
+message LobbyCommonReply
+{
+  enum MsgType {
+    System = 0;
+    Friend = 1;
+    World = 2;
+    Error = 3;
+  }
+  MsgType type = 1;
+  string message = 2;
+}
+
+service LobbyService {
+  rpc JoinLobby(LobbyCommonMessage) returns (stream LobbyCommonReply);
+
+  rpc GetFriendsList(LobbyCommonMessage) returns (FriendList);
+
+  rpc Unfriend(FriendRequest) returns (LobbyCommonReply);
+  rpc SendFriendRequest(FriendRequest) returns (LobbyCommonReply);
+  rpc AcceptFriendRequest(FriendRequest) returns (LobbyCommonReply);
+  rpc DeclineFriendRequest(FriendRequest) returns (LobbyCommonReply);
+
+  rpc SendChat(LobbyChatMessage) returns (LobbyCommonReply);
+}
+
+service AdminLobbyService {
+  rpc BroadcastMessage(LobbyCommonReply) returns (LobbyCommonReply);
+}

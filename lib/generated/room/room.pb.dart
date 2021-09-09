@@ -458,3 +458,155 @@ class ChatMessage extends $pb.GeneratedMessage {
   void clearMessage() => clearField(3);
 }
 
+class PostGameDataRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PostGameDataRequest', createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roomId')
+    ..aOM<PostGameData>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: PostGameData.create)
+    ..hasRequiredFields = false
+  ;
+
+  PostGameDataRequest._() : super();
+  factory PostGameDataRequest({
+    $core.String? roomId,
+    PostGameData? data,
+  }) {
+    final _result = create();
+    if (roomId != null) {
+      _result.roomId = roomId;
+    }
+    if (data != null) {
+      _result.data = data;
+    }
+    return _result;
+  }
+  factory PostGameDataRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PostGameDataRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PostGameDataRequest clone() => PostGameDataRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PostGameDataRequest copyWith(void Function(PostGameDataRequest) updates) => super.copyWith((message) => updates(message as PostGameDataRequest)) as PostGameDataRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PostGameDataRequest create() => PostGameDataRequest._();
+  PostGameDataRequest createEmptyInstance() => create();
+  static $pb.PbList<PostGameDataRequest> createRepeated() => $pb.PbList<PostGameDataRequest>();
+  @$core.pragma('dart2js:noInline')
+  static PostGameDataRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PostGameDataRequest>(create);
+  static PostGameDataRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get roomId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set roomId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasRoomId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRoomId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  PostGameData get data => $_getN(1);
+  @$pb.TagNumber(2)
+  set data(PostGameData v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasData() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearData() => clearField(2);
+  @$pb.TagNumber(2)
+  PostGameData ensureData() => $_ensure(1);
+}
+
+class PostGameData extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PostGameData', createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gameId')
+    ..aOB(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gameEnded')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerWinId')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerLoseId')
+    ..hasRequiredFields = false
+  ;
+
+  PostGameData._() : super();
+  factory PostGameData({
+    $core.String? gameId,
+    $core.bool? gameEnded,
+    $core.String? playerWinId,
+    $core.String? playerLoseId,
+  }) {
+    final _result = create();
+    if (gameId != null) {
+      _result.gameId = gameId;
+    }
+    if (gameEnded != null) {
+      _result.gameEnded = gameEnded;
+    }
+    if (playerWinId != null) {
+      _result.playerWinId = playerWinId;
+    }
+    if (playerLoseId != null) {
+      _result.playerLoseId = playerLoseId;
+    }
+    return _result;
+  }
+  factory PostGameData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PostGameData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PostGameData clone() => PostGameData()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PostGameData copyWith(void Function(PostGameData) updates) => super.copyWith((message) => updates(message as PostGameData)) as PostGameData; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PostGameData create() => PostGameData._();
+  PostGameData createEmptyInstance() => create();
+  static $pb.PbList<PostGameData> createRepeated() => $pb.PbList<PostGameData>();
+  @$core.pragma('dart2js:noInline')
+  static PostGameData getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PostGameData>(create);
+  static PostGameData? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get gameId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set gameId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasGameId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearGameId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.bool get gameEnded => $_getBF(1);
+  @$pb.TagNumber(2)
+  set gameEnded($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasGameEnded() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearGameEnded() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get playerWinId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set playerWinId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPlayerWinId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPlayerWinId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get playerLoseId => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set playerLoseId($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPlayerLoseId() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPlayerLoseId() => clearField(4);
+}
+
