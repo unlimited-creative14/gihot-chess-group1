@@ -37,11 +37,12 @@ const RoomInfoReply$json = const {
     const {'1': 'player_ids', '3': 3, '4': 3, '5': 9, '10': 'playerIds'},
     const {'1': 'started', '3': 4, '4': 1, '5': 8, '10': 'started'},
     const {'1': 'ended', '3': 5, '4': 1, '5': 8, '10': 'ended'},
+    const {'1': 'bet_amount', '3': 6, '4': 1, '5': 5, '10': 'betAmount'},
   ],
 };
 
 /// Descriptor for `RoomInfoReply`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List roomInfoReplyDescriptor = $convert.base64Decode('Cg1Sb29tSW5mb1JlcGx5EhcKB3Jvb21faWQYASABKAlSBnJvb21JZBIdCgpjcmVhdG9yX2lkGAIgASgJUgljcmVhdG9ySWQSHQoKcGxheWVyX2lkcxgDIAMoCVIJcGxheWVySWRzEhgKB3N0YXJ0ZWQYBCABKAhSB3N0YXJ0ZWQSFAoFZW5kZWQYBSABKAhSBWVuZGVk');
+final $typed_data.Uint8List roomInfoReplyDescriptor = $convert.base64Decode('Cg1Sb29tSW5mb1JlcGx5EhcKB3Jvb21faWQYASABKAlSBnJvb21JZBIdCgpjcmVhdG9yX2lkGAIgASgJUgljcmVhdG9ySWQSHQoKcGxheWVyX2lkcxgDIAMoCVIJcGxheWVySWRzEhgKB3N0YXJ0ZWQYBCABKAhSB3N0YXJ0ZWQSFAoFZW5kZWQYBSABKAhSBWVuZGVkEh0KCmJldF9hbW91bnQYBiABKAVSCWJldEFtb3VudA==');
 @$core.Deprecated('Use roomCommonRequestDescriptor instead')
 const RoomCommonRequest$json = const {
   '1': 'RoomCommonRequest',
@@ -100,17 +101,28 @@ const ChatMessage$json = const {
 
 /// Descriptor for `ChatMessage`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List chatMessageDescriptor = $convert.base64Decode('CgtDaGF0TWVzc2FnZRIsCgdyZXF1ZXN0GAEgASgLMhIuUm9vbUNvbW1vblJlcXVlc3RSB3JlcXVlc3QSGAoHbWVzc2FnZRgDIAEoCVIHbWVzc2FnZQ==');
+@$core.Deprecated('Use createRoomRequestDescriptor instead')
+const CreateRoomRequest$json = const {
+  '1': 'CreateRoomRequest',
+  '2': const [
+    const {'1': 'player_id', '3': 1, '4': 1, '5': 9, '10': 'playerId'},
+    const {'1': 'bet_amount', '3': 2, '4': 1, '5': 5, '10': 'betAmount'},
+  ],
+};
+
+/// Descriptor for `CreateRoomRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List createRoomRequestDescriptor = $convert.base64Decode('ChFDcmVhdGVSb29tUmVxdWVzdBIbCglwbGF5ZXJfaWQYASABKAlSCHBsYXllcklkEh0KCmJldF9hbW91bnQYAiABKAVSCWJldEFtb3VudA==');
 @$core.Deprecated('Use postGameDataRequestDescriptor instead')
 const PostGameDataRequest$json = const {
   '1': 'PostGameDataRequest',
   '2': const [
-    const {'1': 'room_id', '3': 1, '4': 1, '5': 9, '10': 'roomId'},
+    const {'1': 'bet_value', '3': 1, '4': 1, '5': 5, '10': 'betValue'},
     const {'1': 'data', '3': 2, '4': 1, '5': 11, '6': '.PostGameData', '10': 'data'},
   ],
 };
 
 /// Descriptor for `PostGameDataRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List postGameDataRequestDescriptor = $convert.base64Decode('ChNQb3N0R2FtZURhdGFSZXF1ZXN0EhcKB3Jvb21faWQYASABKAlSBnJvb21JZBIhCgRkYXRhGAIgASgLMg0uUG9zdEdhbWVEYXRhUgRkYXRh');
+final $typed_data.Uint8List postGameDataRequestDescriptor = $convert.base64Decode('ChNQb3N0R2FtZURhdGFSZXF1ZXN0EhsKCWJldF92YWx1ZRgBIAEoBVIIYmV0VmFsdWUSIQoEZGF0YRgCIAEoCzINLlBvc3RHYW1lRGF0YVIEZGF0YQ==');
 @$core.Deprecated('Use postGameDataDescriptor instead')
 const PostGameData$json = const {
   '1': 'PostGameData',

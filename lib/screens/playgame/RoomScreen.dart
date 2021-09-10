@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:frontend/component/LobbyService.dart';
 import 'package:frontend/component/RoomService.dart';
+import 'package:frontend/component/UserInfo.dart';
 import 'package:frontend/constant/color.dart';
+import 'package:frontend/generated/lobby/lobby.pb.dart';
 import 'package:frontend/generated/room/room.pb.dart';
 import 'package:frontend/screens/components/Chat.dart';
 import 'package:frontend/screens/components/CustomBackButton.dart';
@@ -13,31 +16,41 @@ import 'package:frontend/screens/components/RoundedButton.dart';
 import 'package:frontend/screens/newroom/NewRoomScreen.dart';
 
 class RoomScreen extends StatefulWidget {
+  final String id;
+  final Stream<LobbyCommonReply> lobbyStream;
+  const RoomScreen({Key? key, required this.id, required this.lobbyStream})
+      : super(key: key);
   @override
   _RoomScreenState createState() => _RoomScreenState();
 }
 
 class _RoomScreenState extends State<RoomScreen> {
-  String playerId = "dev1";
   bool isWaiting = false;
   int counting = 0;
   bool stopTimer = false;
   RoomService roomService = RoomService();
   var roomListener;
+  int betAmountIndex = 0;
+  var betValues = [0, 1, 2, 5, 10];
+
+  // lobby service
+  LobbyService lobbyService = LobbyService();
+
+  UserService userService = UserService();
 
   // some initial for chat with friend
-  bool friendVisiable = true;
+  bool friendVisiable = false;
   var imageUrl = [
-    "assets/images/profile.png",
-    "assets/images/profile.png",
-    "assets/images/profile.png"
+    "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png",
   ];
-  var friendList = ["username1", "name2", "username3"];
-  var friendStatus = [true, true, false];
-  int friendSelectedIdx = 1;
+  var friendList = ["a"];
+  var friendStatus = [false];
+  int friendSelectedIdx = 0;
   String chattingMessageLobby = "";
   var chatLobbyController = TextEditingController();
-  var listChatMessageInLobby = [LobbyChat(), LobbyChat(), LobbyChat()];
+  var listChatMessageInLobby = [LobbyChat()];
+  bool haveFriend = false;
+  String newFriendId = "";
 
   void changeWaitingState(bool targetState) {
     setState(() {
@@ -64,15 +77,15 @@ class _RoomScreenState extends State<RoomScreen> {
   void hotGame(context) {}
   void cancelGame(context) {}
 
-  void commonGame(context) async {
-    var respone = await roomService.createRoom(playerId);
+  void commonGame(int betAmount) async {
+    var respone = await roomService.createRoom(widget.id, betAmount);
     if (respone.success != "created") {
       alertMsg("Không tìm thấy máy chủ");
     } else {
       print("roomId : ${respone.roomId}");
       // join room
       Stream<RoomMessage> joinroom =
-          roomService.joinRoom(respone.roomId, playerId).asBroadcastStream();
+          roomService.joinRoom(respone.roomId, widget.id).asBroadcastStream();
       // listen respone and get roomId
       roomListener = joinroom.listen((event) {
         if (event.type.toString() == "Error") {
@@ -84,10 +97,10 @@ class _RoomScreenState extends State<RoomScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => NewRoomScreen(
-                roomMesasge: joinroom,
-                playerId: playerId,
-                roomId: event.roomId,
-              ),
+                  roomMesasge: joinroom,
+                  playerId: widget.id,
+                  roomId: event.roomId,
+                  betAmount: betAmount),
             ),
           );
         }
@@ -102,29 +115,35 @@ class _RoomScreenState extends State<RoomScreen> {
   // when client click findgame button
   void findroom(String roomId) {
     Stream<RoomMessage> joinroom =
-        roomService.joinRoom(roomId, playerId).asBroadcastStream();
-    roomListener = joinroom.listen((event) {
+        roomService.joinRoom(roomId, widget.id).asBroadcastStream();
+    roomListener = joinroom.listen((event) async {
       if (event.type.toString() == "Error") {
         alertMsg("Không tìm thấy phòng này");
       } else {
-        var msgs = event.msg.split(":");
-        if (msgs.length > 1) {
-          var playerList = msgs[1].split(",");
-          if (playerList.length > 1) {
-            roomListener.cancel();
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NewRoomScreen(
-                  playerId: playerId,
-                  roomMesasge: joinroom,
-                  ishost: false,
-                  hostId: playerList[0],
-                  roomId: event.roomId,
+        try {
+          var roomInfo = await roomService.getInfoRoom(roomId);
+          var msgs = event.msg.split(":");
+          if (msgs.length > 1) {
+            var playerList = msgs[1].split(",");
+            if (playerList.length > 1) {
+              roomListener.cancel();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NewRoomScreen(
+                    playerId: widget.id,
+                    roomMesasge: joinroom,
+                    ishost: false,
+                    hostId: playerList[0],
+                    roomId: event.roomId,
+                    betAmount: roomInfo.betAmount,
+                  ),
                 ),
-              ),
-            );
+              );
+            }
           }
+        } catch (e) {
+          alertMsg("Lỗi");
         }
       }
     });
@@ -179,9 +198,261 @@ class _RoomScreenState extends State<RoomScreen> {
 
     // add new chat to screen
     listChatMessageInLobby[friendSelectedIdx]
-        .addnewchat(Chat(message: chattingMessage, username: playerId));
+        .addnewchat(Chat(message: chattingMessage, username: widget.id));
     // clear chat box
     chatLobbyController.clear();
+  }
+
+  void getInforAndPutInto(String id, int index, bool setStateAfter) async {
+    try {
+      var respone = await userService.getUserInfo(id);
+      // imageUrl[index] = respone.imageurl
+      if (setStateAfter) {
+        if (mounted) setState(() {});
+      }
+    } catch (e) {
+      print("Error get information: $e");
+    }
+  }
+
+  void addnewFriend(String newFriendId) async {
+    // add new friend
+    try {
+      var respone =
+          await lobbyService.sendFriendRequest(widget.id, newFriendId);
+      if (respone.type.toString() == "Error") {
+        alertMsg("Nhập tên sai hoặc bạn của bạn đã offline");
+        print(respone);
+      } else {
+        alertMsg("Gửi lời mời thành công");
+      }
+    } catch (e) {
+      alertMsg("Lỗi thêm bạn");
+      print("Error on add new frient: $e");
+    }
+  }
+
+  void onLobbyReply(LobbyCommonReply reply) {
+    if (reply.type.toString() == "System") {
+      // new frient request
+      var msgs = reply.message.toString().split(":");
+      if (msgs.length > 1) {
+        showFriendRequest(msgs[1]);
+      }
+    }
+  }
+
+  void listenLobby() {
+    widget.lobbyStream.listen((event) {
+      //listen from lobby
+      onLobbyReply(event);
+    });
+  }
+
+  void getFriendList(String id) async {
+    try {
+      var respone = await lobbyService.getFriendList(id);
+      int index = 0;
+      if (respone.friendList.length != 0) haveFriend = true;
+      for (var friend in respone.friendList) {
+        // foreach friend , get information
+        bool setStateAffter =
+            index == respone.friendList.length - 1 ? true : false;
+        if (index == 0) {
+          int _index = index;
+          getInforAndPutInto(friend.playerId, _index, setStateAffter);
+          index += 1;
+          continue;
+        }
+        imageUrl.add(
+            "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png");
+        friendStatus.add(friend.online);
+        friendList.add(friend.playerId);
+        int _index = index;
+        getInforAndPutInto(friend.playerId, _index, setStateAffter);
+        index += 1;
+      }
+    } catch (e) {
+      print("Error get frient list : $e");
+    }
+  }
+
+  void excuteAfterBuildingComplete() {
+    getFriendList(widget.id);
+    listenLobby();
+  }
+
+  void acceptFriendRequest(String id) async {
+    try {
+      var respone = await lobbyService.acceptFriendRequest(widget.id, id);
+      if (respone.type.toString() == "Error") {
+        print(respone);
+        alertMsg("Lời mời đã hết hạn");
+      } else {
+        alertMsg("Chấp nhận kết bạn thành công");
+        haveFriend = true;
+        insertNewFriend(id);
+      }
+    } catch (e) {
+      print("Error accept friend request : $e");
+    }
+  }
+
+  void declineFriendRequest(String id) async {
+    try {
+      var respone = await lobbyService.acceptFriendRequest(widget.id, id);
+      if (respone.type.toString() == "Error") {
+        alertMsg("Lời mời đã hết hạn");
+      } else {
+        alertMsg("Từ chối kết bạn thành công");
+      }
+    } catch (e) {
+      print("Error decline friend request : $e");
+    }
+  }
+
+  void insertNewFriend(String id) {
+    // when new friend add to list
+    if (haveFriend) {
+      imageUrl.add(
+          "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png");
+      friendStatus.add(true);
+      friendList.add(id);
+      int _index = friendList.length - 1;
+      getInforAndPutInto(id, _index, true);
+    } else {
+      getInforAndPutInto(id, 0, true);
+    }
+  }
+
+  // bet amount
+  Future<void> betAmountShowing() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: Text("Đặt cược"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(
+                    betValues[betAmountIndex].toString(),
+                    style: TextStyle(fontSize: 20, color: Colors.black),
+                  ),
+                  Slider(
+                    value: betAmountIndex.toDouble(),
+                    onChanged: (value) {
+                      if (mounted) {
+                        setState(() {
+                          betAmountIndex = value.toInt();
+                        });
+                      }
+                    },
+                    min: 0,
+                    max: 4,
+                    divisions: 4,
+                  )
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  commonGame(betValues[betAmountIndex]);
+                },
+                child: Text("Đồng ý"),
+              )
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Future<void> openBoxAddFriend() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: Text("Thêm bạn"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  TextField(
+                    onChanged: (value) {
+                      newFriendId = value;
+                    },
+                    decoration: InputDecoration(
+                        icon: Icon(Icons.person),
+                        hintText: "Nhập tên người bạn"),
+                  )
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  addnewFriend(newFriendId);
+                },
+                child: Text("Gửi"),
+              )
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Future<void> showFriendRequest(String id) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: Text("Kết bạn"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(
+                    "Bạn nhận được lời mời kết bạn từ : $id",
+                    style: TextStyle(fontSize: 18, color: Colors.black),
+                  )
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  acceptFriendRequest(id);
+                },
+                child: Text("Chấp nhận"),
+              ),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    declineFriendRequest(id);
+                  },
+                  child: Text("Từ chối"))
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    WidgetsBinding.instance!
+        .addPostFrameCallback((_) => excuteAfterBuildingComplete());
+    super.initState();
   }
 
   @override
@@ -233,7 +504,7 @@ class _RoomScreenState extends State<RoomScreen> {
                         GameButton(
                           text: "Tạo bàn mới",
                           onpress: () {
-                            commonGame(context);
+                            betAmountShowing();
                           },
                           imgWidget:
                               SvgPicture.asset("assets/icons/newgame.svg"),
@@ -320,7 +591,7 @@ class _RoomScreenState extends State<RoomScreen> {
                                                                         .listChatMsg[
                                                                             index]
                                                                         .username ==
-                                                                    playerId
+                                                                    widget.id
                                                                 ? Colors.green
                                                                 : Colors.blue),
                                                         children: [
@@ -355,7 +626,7 @@ class _RoomScreenState extends State<RoomScreen> {
                                               suffixIcon: GestureDetector(
                                                 onTap: () {
                                                   sendChatInLobby(
-                                                      playerId,
+                                                      widget.id,
                                                       friendList[
                                                           friendSelectedIdx],
                                                       chattingMessageLobby);
@@ -423,7 +694,7 @@ class _RoomScreenState extends State<RoomScreen> {
                                                       .all(Radius.circular(
                                                           size.width * 0.075)),
                                                   image: DecorationImage(
-                                                    image: AssetImage(
+                                                    image: NetworkImage(
                                                         imageUrl[index]),
                                                   ),
                                                 ),
@@ -503,10 +774,14 @@ class _RoomScreenState extends State<RoomScreen> {
                           size.width * 0.9, size.height * 0.5, 0, 0),
                       child: GestureDetector(
                         onTap: () {
-                          if (mounted) {
-                            setState(() {
-                              friendVisiable = !friendVisiable;
-                            });
+                          if (haveFriend) {
+                            if (mounted) {
+                              setState(() {
+                                friendVisiable = !friendVisiable;
+                              });
+                            }
+                          } else {
+                            openBoxAddFriend();
                           }
                         },
                         child: Icon(

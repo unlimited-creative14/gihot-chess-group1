@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:frontend/component/RoomService.dart';
+import 'package:frontend/component/UserInfo.dart';
 import 'package:frontend/component/gameService.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/generated/game/game.pb.dart';
@@ -15,13 +17,15 @@ class NewRoomScreen extends StatefulWidget {
   final String playerId;
   final String hostId;
   final String roomId;
+  final int betAmount;
   NewRoomScreen(
       {Key? key,
       this.ishost = true,
       this.roomId = "",
       this.hostId = "",
       required this.playerId,
-      required this.roomMesasge})
+      required this.roomMesasge,
+      required this.betAmount})
       : super(key: key);
 
   @override
@@ -31,6 +35,7 @@ class NewRoomScreen extends StatefulWidget {
 class _NewRoomScreenState extends State<NewRoomScreen> {
   RoomService roomService = RoomService();
   GameService gameService = GameService();
+  UserService userService = UserService();
   var chats = [];
   // 0 if you, 1 if opponent
   var chatColors = [];
@@ -45,7 +50,11 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   // id and image of player
   // index 0 : host, index 1 : player
   var Ids = ["player 1", "player 2"];
-  var Images = ["assets/images/profile.png", "assets/images/profile.png"];
+  var Images = [
+    "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png",
+    "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png"
+  ];
+  var CurrencyList = [0, 0];
 
   // control chat field and clean when submit
   var chatController = TextEditingController();
@@ -53,9 +62,6 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   var listenRoomMessage;
 
   bool ishost = false;
-
-  // get infor player
-  void getInfoById(String id) {}
 
   void onreply(RoomMessage roomMessage) {
     print("Reply from server: ");
@@ -202,6 +208,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
           Ids[0] = widget.playerId;
           roomId = widget.roomId;
         });
+      getInforAndPutTo(0, playerId);
     } else {
       // get information of the player and the opponents
       if (mounted)
@@ -212,6 +219,8 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
           hostId = widget.hostId;
           have_opponent = true;
         });
+      getInforAndPutTo(0, widget.hostId);
+      getInforAndPutTo(1, playerId);
     }
     // listen some room messages
     listenMessage();
@@ -248,6 +257,23 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
     }
   }
 
+  void getInforAndPutTo(int index, String id) async {
+    if (index < 2) {
+      try {
+        var respone = await userService.getUserInfo(id);
+        // Images[id] = respone.imageurl
+        if (mounted) {
+          setState(() {
+            CurrencyList[index] = respone.gameCurrency;
+          });
+        }
+      } catch (e) {
+        showalert("Lỗi");
+        print("Error getting information: $e");
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -273,158 +299,257 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
         color: bg_transpearent,
         width: size.width,
         height: size.height,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: size.height * 0.05),
-              Container(
-                  height: size.height * 0.15,
-                  padding: EdgeInsets.fromLTRB(
-                      size.width * 0.05, 0, 0, size.width * 0.05),
-                  child: Column(
-                    children: [
-                      Text("Room ID:",
-                          style: TextStyle(fontSize: 20, color: light)),
-                      SelectableText(roomId,
-                          style: TextStyle(fontSize: 20, color: light_blue))
-                    ],
-                  )),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).requestFocus(new FocusNode());
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: size.height * 0.05),
                 Container(
-                  height: size.height * 0.25,
-                  child: Column(
-                    children: [
-                      Container(
-                        height: size.height * 0.15,
-                        width: size.height * 0.15,
-                        decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(size.height * 0.7),
-                            image:
-                                DecorationImage(image: AssetImage(Images[0]))),
-                      ),
-                      SizedBox(height: size.width * 0.04),
-                      Text(Ids[0], style: TextStyle(fontSize: 18, color: light))
-                    ],
-                  ),
-                ),
-                SizedBox(width: size.width * 0.1),
-                Container(
-                    height: size.height * 0.25,
-                    child: Visibility(
-                        visible: have_opponent,
-                        replacement: Column(children: [
-                          Image.asset(
-                            "assets/images/question.png",
+                    height: size.height * 0.15,
+                    padding: EdgeInsets.fromLTRB(
+                        size.width * 0.05, 0, 0, size.width * 0.05),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Mã phòng :    ",
+                              style: TextStyle(fontSize: 20, color: light),
+                            ),
+                            SelectableText(
+                              roomId,
+                              style: TextStyle(fontSize: 20, color: light_blue),
+                            )
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("Tiền cược :    ",
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: dark_blue,
+                                    fontWeight: FontWeight.bold,
+                                    fontStyle: FontStyle.italic)),
+                            SelectableText(
+                              widget.betAmount.toString(),
+                              style: TextStyle(fontSize: 20, color: dark_blue),
+                            )
+                          ],
+                        ),
+                      ],
+                    )),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      height: size.height * 0.25,
+                      child: Column(
+                        children: [
+                          Container(
+                            width: size.height * 0.15,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SvgPicture.asset(
+                                  "assets/icons/coin.svg",
+                                  height: size.height * 0.03,
+                                  width: size.height * 0.03,
+                                ),
+                                Text(
+                                  " : " + CurrencyList[0].toString(),
+                                  style: TextStyle(fontSize: 18, color: light),
+                                )
+                              ],
+                            ),
+                          ),
+                          Container(
                             height: size.height * 0.15,
                             width: size.height * 0.15,
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  BorderRadius.circular(size.height * 0.7),
+                              image: DecorationImage(
+                                image: NetworkImage(Images[0]),
+                              ),
+                            ),
+                            // child: Image.network(Images[0]),
                           ),
-                          SizedBox(height: size.width * 0.04),
-                          Text("wating...",
+                          SizedBox(height: size.width * 0.02),
+                          Text(Ids[0],
+                              style: TextStyle(fontSize: 18, color: light))
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: size.width * 0.1),
+                    Container(
+                      height: size.height * 0.25,
+                      child: Visibility(
+                        visible: have_opponent,
+                        replacement: Column(
+                          children: [
+                            Container(
+                              width: size.height * 0.15,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/icons/coin.svg",
+                                    height: size.height * 0.03,
+                                    width: size.height * 0.03,
+                                  ),
+                                  Text(
+                                    " :  ?",
+                                    style:
+                                        TextStyle(fontSize: 18, color: light),
+                                  )
+                                ],
+                              ),
+                            ),
+                            Image.asset(
+                              "assets/images/question.png",
+                              height: size.height * 0.15,
+                              width: size.height * 0.15,
+                            ),
+                            SizedBox(height: size.width * 0.02),
+                            Text(
+                              "đang đợi...",
                               style:
-                                  TextStyle(fontSize: 18, color: Colors.black))
-                        ]),
+                                  TextStyle(fontSize: 18, color: Colors.black),
+                            )
+                          ],
+                        ),
                         child: Column(
                           children: [
+                            Container(
+                              width: size.height * 0.15,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/icons/coin.svg",
+                                    height: size.height * 0.03,
+                                    width: size.height * 0.03,
+                                  ),
+                                  Text(
+                                    " : " + CurrencyList[1].toString(),
+                                    style:
+                                        TextStyle(fontSize: 18, color: light),
+                                  )
+                                ],
+                              ),
+                            ),
                             Container(
                               height: size.height * 0.15,
                               width: size.height * 0.15,
                               decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.circular(size.width * 0.7),
-                                  image: DecorationImage(
-                                      image: AssetImage(Images[1]))),
+                                borderRadius:
+                                    BorderRadius.circular(size.width * 0.7),
+                                image: DecorationImage(
+                                  image: NetworkImage(Images[1]),
+                                ),
+                              ),
                             ),
-                            SizedBox(height: size.width * 0.04),
-                            Text(Ids[1],
-                                style: TextStyle(fontSize: 18, color: light))
-                          ],
-                        ))),
-              ]),
-              SizedBox(height: size.height * 0.05),
-              Visibility(
-                visible: ishost,
-                replacement: Container(
-                  height: size.height * 0.08,
-                ),
-                child: Container(
-                  height: size.height * 0.08,
-                  child: RoundedButton(
-                    text: "Bắt đầu",
-                    onpress: () {
-                      startGame();
-                    },
-                  ),
-                ),
-              ),
-              SizedBox(height: size.height * 0.02),
-              Container(
-                height: size.height * 0.3,
-                padding: EdgeInsets.all(size.width * 0.05),
-                decoration: BoxDecoration(
-                  color: bg_transpearent,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(size.width * 0.1),
-                    topRight: Radius.circular(size.width * 0.1),
-                  ),
-                ),
-                child: ListView.builder(
-                    itemCount: chats.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      // TOTO : custom color username
-                      if (chatColors[index] == 1) {
-                        usernameColor = Colors.blue;
-                      } else {
-                        usernameColor = Colors.green;
-                      }
-                      return RichText(
-                          text: TextSpan(
-                              text: chats[index].friendList + " : ",
-                              style:
-                                  TextStyle(fontSize: 16, color: usernameColor),
-                              children: [
-                            TextSpan(
-                              text: chats[index].message,
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.white),
+                            SizedBox(height: size.width * 0.02),
+                            Text(
+                              Ids[1],
+                              style: TextStyle(fontSize: 18, color: light),
                             )
-                          ]));
-                    }),
-              ),
-              Container(
-                height: size.height * .1,
-                padding: EdgeInsets.fromLTRB(
-                    size.width * 0.05, 0, size.width * 0.05, 0),
-                decoration: BoxDecoration(color: Colors.black),
-                child: TextField(
-                    onChanged: (text) {
-                      chattingMessage = text;
-                    },
-                    style: TextStyle(color: Colors.white),
-                    controller: chatController,
-                    decoration: InputDecoration(
-                      hintStyle: TextStyle(color: Colors.white60),
-                      suffixIcon: GestureDetector(
-                        onTap: () {
-                          sendChat(chattingMessage);
-                        },
-                        child: Icon(
-                          Icons.send,
-                          color: Colors.cyan,
+                          ],
                         ),
                       ),
-                      hintText: "Type message here",
-                      fillColor: Colors.white,
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.cyan),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.cyan),
-                      ),
-                    )),
-              )
-            ],
+                    ),
+                  ],
+                ),
+                SizedBox(height: size.height * 0.05),
+                Visibility(
+                  visible: ishost,
+                  replacement: Container(
+                    height: size.height * 0.08,
+                  ),
+                  child: Container(
+                    height: size.height * 0.08,
+                    child: RoundedButton(
+                      text: "Bắt đầu",
+                      onpress: () {
+                        startGame();
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(height: size.height * 0.02),
+                Container(
+                  height: size.height * 0.3,
+                  padding: EdgeInsets.all(size.width * 0.05),
+                  decoration: BoxDecoration(
+                    color: bg_transpearent,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(size.width * 0.1),
+                      topRight: Radius.circular(size.width * 0.1),
+                    ),
+                  ),
+                  child: ListView.builder(
+                      itemCount: chats.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        // TOTO : custom color username
+                        if (chatColors[index] == 1) {
+                          usernameColor = Colors.blue;
+                        } else {
+                          usernameColor = Colors.green;
+                        }
+                        return RichText(
+                            text: TextSpan(
+                                text: chats[index].username + " : ",
+                                style: TextStyle(
+                                    fontSize: 16, color: usernameColor),
+                                children: [
+                              TextSpan(
+                                text: chats[index].message,
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white),
+                              )
+                            ]));
+                      }),
+                ),
+                Container(
+                  height: size.height * .1,
+                  padding: EdgeInsets.fromLTRB(
+                      size.width * 0.05, 0, size.width * 0.05, 0),
+                  decoration: BoxDecoration(color: Colors.black),
+                  child: TextField(
+                      onChanged: (text) {
+                        chattingMessage = text;
+                      },
+                      style: TextStyle(color: Colors.white),
+                      controller: chatController,
+                      decoration: InputDecoration(
+                        hintStyle: TextStyle(color: Colors.white60),
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            sendChat(chattingMessage);
+                          },
+                          child: Icon(
+                            Icons.send,
+                            color: Colors.cyan,
+                          ),
+                        ),
+                        hintText: "Type message here",
+                        fillColor: Colors.white,
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.cyan),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.cyan),
+                        ),
+                      )),
+                )
+              ],
+            ),
           ),
         ),
       )),

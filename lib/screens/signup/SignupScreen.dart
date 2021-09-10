@@ -31,8 +31,8 @@ class _SignupScreenState extends State<SignupScreen> {
   void submit(context) {
     // signup with username, email, password variables
     // navigation
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => HomeScreen()));
+    // Navigator.push(
+    //     context, MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 
   @override

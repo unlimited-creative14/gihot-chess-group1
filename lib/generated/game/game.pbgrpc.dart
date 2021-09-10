@@ -39,6 +39,12 @@ class GameServiceClient extends $grpc.Client {
           ($0.MoveChessRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.GameCommonReply.fromBuffer(value));
+  static final _$leaveGame =
+      $grpc.ClientMethod<$0.GameCommonRequest, $0.GameCommonReply>(
+          '/GameService/LeaveGame',
+          ($0.GameCommonRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) =>
+              $0.GameCommonReply.fromBuffer(value));
 
   GameServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -69,6 +75,12 @@ class GameServiceClient extends $grpc.Client {
   $grpc.ResponseFuture<$0.GameCommonReply> sendMove($0.MoveChessRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$sendMove, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.GameCommonReply> leaveGame(
+      $0.GameCommonRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$leaveGame, request, options: options);
   }
 }
 
@@ -104,6 +116,13 @@ abstract class GameServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.MoveChessRequest.fromBuffer(value),
         ($0.GameCommonReply value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.GameCommonRequest, $0.GameCommonReply>(
+        'LeaveGame',
+        leaveGame_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.GameCommonRequest.fromBuffer(value),
+        ($0.GameCommonReply value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.GameCommonReply> createGame_Pre($grpc.ServiceCall call,
@@ -126,6 +145,11 @@ abstract class GameServiceBase extends $grpc.Service {
     return sendMove(call, await request);
   }
 
+  $async.Future<$0.GameCommonReply> leaveGame_Pre($grpc.ServiceCall call,
+      $async.Future<$0.GameCommonRequest> request) async {
+    return leaveGame(call, await request);
+  }
+
   $async.Future<$0.GameCommonReply> createGame(
       $grpc.ServiceCall call, $0.GameCreateRequest request);
   $async.Stream<$0.GameCommonReply> subscribeGame(
@@ -134,4 +158,6 @@ abstract class GameServiceBase extends $grpc.Service {
       $grpc.ServiceCall call, $1.Empty request);
   $async.Future<$0.GameCommonReply> sendMove(
       $grpc.ServiceCall call, $0.MoveChessRequest request);
+  $async.Future<$0.GameCommonReply> leaveGame(
+      $grpc.ServiceCall call, $0.GameCommonRequest request);
 }

@@ -17,6 +17,7 @@ message RoomInfoReply {
     repeated string player_ids = 3;
     bool started = 4;
     bool ended = 5;
+    int32 bet_amount = 6;
 }
 
 message RoomCommonRequest {
@@ -48,8 +49,13 @@ message ChatMessage
     string message = 3;
 }
 
+message CreateRoomRequest {
+    string player_id = 1;
+    int32 bet_amount = 2;
+}
+
 service RoomService {
-    rpc CreateRoom(RoomCommonRequest) returns (RoomCommonReply);
+    rpc CreateRoom(CreateRoomRequest) returns (RoomCommonReply);
     rpc JoinRoom(RoomCommonRequest) returns (stream RoomMessage);
     rpc LeaveRoom(RoomCommonRequest) returns (RoomCommonReply);
     rpc GetInfoRoom(RoomInfoRequest) returns (RoomInfoReply);
@@ -64,7 +70,7 @@ service RoomService {
 
 message PostGameDataRequest
 {
-    string room_id = 1;
+    int32 bet_value = 1;
     PostGameData data = 2;
 }
 

@@ -100,19 +100,19 @@ class MoveChessRequest extends $pb.GeneratedMessage {
 
 class GameCreateRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GameCreateRequest', createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roomId')
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'betAmount', $pb.PbFieldType.O3)
     ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerIds', protoName: 'playerIds')
     ..hasRequiredFields = false
   ;
 
   GameCreateRequest._() : super();
   factory GameCreateRequest({
-    $core.String? roomId,
+    $core.int? betAmount,
     $core.Iterable<$core.String>? playerIds,
   }) {
     final _result = create();
-    if (roomId != null) {
-      _result.roomId = roomId;
+    if (betAmount != null) {
+      _result.betAmount = betAmount;
     }
     if (playerIds != null) {
       _result.playerIds.addAll(playerIds);
@@ -141,13 +141,13 @@ class GameCreateRequest extends $pb.GeneratedMessage {
   static GameCreateRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get roomId => $_getSZ(0);
+  $core.int get betAmount => $_getIZ(0);
   @$pb.TagNumber(1)
-  set roomId($core.String v) { $_setString(0, v); }
+  set betAmount($core.int v) { $_setSignedInt32(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasRoomId() => $_has(0);
+  $core.bool hasBetAmount() => $_has(0);
   @$pb.TagNumber(1)
-  void clearRoomId() => clearField(1);
+  void clearBetAmount() => clearField(1);
 
   @$pb.TagNumber(2)
   $core.List<$core.String> get playerIds => $_getList(1);

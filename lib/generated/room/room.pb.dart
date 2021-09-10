@@ -108,6 +108,7 @@ class RoomInfoReply extends $pb.GeneratedMessage {
     ..pPS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerIds')
     ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'started')
     ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ended')
+    ..a<$core.int>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'betAmount', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
@@ -118,6 +119,7 @@ class RoomInfoReply extends $pb.GeneratedMessage {
     $core.Iterable<$core.String>? playerIds,
     $core.bool? started,
     $core.bool? ended,
+    $core.int? betAmount,
   }) {
     final _result = create();
     if (roomId != null) {
@@ -134,6 +136,9 @@ class RoomInfoReply extends $pb.GeneratedMessage {
     }
     if (ended != null) {
       _result.ended = ended;
+    }
+    if (betAmount != null) {
+      _result.betAmount = betAmount;
     }
     return _result;
   }
@@ -196,6 +201,15 @@ class RoomInfoReply extends $pb.GeneratedMessage {
   $core.bool hasEnded() => $_has(4);
   @$pb.TagNumber(5)
   void clearEnded() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get betAmount => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set betAmount($core.int v) { $_setSignedInt32(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasBetAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearBetAmount() => clearField(6);
 }
 
 class RoomCommonRequest extends $pb.GeneratedMessage {
@@ -458,21 +472,82 @@ class ChatMessage extends $pb.GeneratedMessage {
   void clearMessage() => clearField(3);
 }
 
+class CreateRoomRequest extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'CreateRoomRequest', createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'playerId')
+    ..a<$core.int>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'betAmount', $pb.PbFieldType.O3)
+    ..hasRequiredFields = false
+  ;
+
+  CreateRoomRequest._() : super();
+  factory CreateRoomRequest({
+    $core.String? playerId,
+    $core.int? betAmount,
+  }) {
+    final _result = create();
+    if (playerId != null) {
+      _result.playerId = playerId;
+    }
+    if (betAmount != null) {
+      _result.betAmount = betAmount;
+    }
+    return _result;
+  }
+  factory CreateRoomRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory CreateRoomRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  CreateRoomRequest clone() => CreateRoomRequest()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  CreateRoomRequest copyWith(void Function(CreateRoomRequest) updates) => super.copyWith((message) => updates(message as CreateRoomRequest)) as CreateRoomRequest; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static CreateRoomRequest create() => CreateRoomRequest._();
+  CreateRoomRequest createEmptyInstance() => create();
+  static $pb.PbList<CreateRoomRequest> createRepeated() => $pb.PbList<CreateRoomRequest>();
+  @$core.pragma('dart2js:noInline')
+  static CreateRoomRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<CreateRoomRequest>(create);
+  static CreateRoomRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get playerId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set playerId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPlayerId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPlayerId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get betAmount => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set betAmount($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBetAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBetAmount() => clearField(2);
+}
+
 class PostGameDataRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PostGameDataRequest', createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'roomId')
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'betValue', $pb.PbFieldType.O3)
     ..aOM<PostGameData>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: PostGameData.create)
     ..hasRequiredFields = false
   ;
 
   PostGameDataRequest._() : super();
   factory PostGameDataRequest({
-    $core.String? roomId,
+    $core.int? betValue,
     PostGameData? data,
   }) {
     final _result = create();
-    if (roomId != null) {
-      _result.roomId = roomId;
+    if (betValue != null) {
+      _result.betValue = betValue;
     }
     if (data != null) {
       _result.data = data;
@@ -501,13 +576,13 @@ class PostGameDataRequest extends $pb.GeneratedMessage {
   static PostGameDataRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get roomId => $_getSZ(0);
+  $core.int get betValue => $_getIZ(0);
   @$pb.TagNumber(1)
-  set roomId($core.String v) { $_setString(0, v); }
+  set betValue($core.int v) { $_setSignedInt32(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasRoomId() => $_has(0);
+  $core.bool hasBetValue() => $_has(0);
   @$pb.TagNumber(1)
-  void clearRoomId() => clearField(1);
+  void clearBetValue() => clearField(1);
 
   @$pb.TagNumber(2)
   PostGameData get data => $_getN(1);

@@ -18,4 +18,10 @@ class GameService {
       ..source = source
       ..target = target);
   }
+
+  Future<GameCommonReply> leaveGame(String gameId, String playerId) {
+    return gameServiceClient.leaveGame(GameCommonRequest()
+      ..gameId = gameId
+      ..playerId = playerId);
+  }
 }

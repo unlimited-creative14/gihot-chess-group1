@@ -5,8 +5,10 @@ import 'package:frontend/generated/room/room.pbgrpc.dart';
 class RoomService {
   RoomServiceClient room = RoomServiceClient(channel);
 
-  Future<RoomCommonReply> createRoom(String playerId) {
-    return room.createRoom(RoomCommonRequest()..playerId = playerId);
+  Future<RoomCommonReply> createRoom(String playerId, int betAmount) {
+    return room.createRoom(CreateRoomRequest()
+      ..playerId = playerId
+      ..betAmount = betAmount);
   }
 
   Future<RoomCommonReply> leaveRoom(String playerId, String roomId) {

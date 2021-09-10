@@ -106,7 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_currentUser != null) {
         UserInfoReply user = await userService.getUserInfo(_currentUser!.id);
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomeScreen(
+              id: _currentUser!.id,
+            ),
+          ),
+        );
       }
     } catch (error) {
       print(error);
@@ -130,7 +136,11 @@ class _LoginScreenState extends State<LoginScreen> {
         UserInfoReply user = await userService.getUserInfo(accessToken.userId);
 
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => HomeScreen()));
+            context,
+            MaterialPageRoute(
+                builder: (context) => HomeScreen(
+                      id: accessToken.userId,
+                    )));
         break;
       case FacebookLoginStatus.cancelledByUser:
         _showMessage('Login cancelled by the user.');
@@ -160,7 +170,11 @@ class _LoginScreenState extends State<LoginScreen> {
     // var respone = await accountService.login(email, password);
     // print(respone);
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => HomeScreen()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => HomeScreen(
+                  id: "hailong",
+                )));
   }
 
   void signup(context) {

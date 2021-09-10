@@ -25,13 +25,13 @@ final $typed_data.Uint8List moveChessRequestDescriptor = $convert.base64Decode('
 const GameCreateRequest$json = const {
   '1': 'GameCreateRequest',
   '2': const [
-    const {'1': 'room_id', '3': 1, '4': 1, '5': 9, '10': 'roomId'},
+    const {'1': 'bet_amount', '3': 1, '4': 1, '5': 5, '10': 'betAmount'},
     const {'1': 'playerIds', '3': 2, '4': 3, '5': 9, '10': 'playerIds'},
   ],
 };
 
 /// Descriptor for `GameCreateRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List gameCreateRequestDescriptor = $convert.base64Decode('ChFHYW1lQ3JlYXRlUmVxdWVzdBIXCgdyb29tX2lkGAEgASgJUgZyb29tSWQSHAoJcGxheWVySWRzGAIgAygJUglwbGF5ZXJJZHM=');
+final $typed_data.Uint8List gameCreateRequestDescriptor = $convert.base64Decode('ChFHYW1lQ3JlYXRlUmVxdWVzdBIdCgpiZXRfYW1vdW50GAEgASgFUgliZXRBbW91bnQSHAoJcGxheWVySWRzGAIgAygJUglwbGF5ZXJJZHM=');
 @$core.Deprecated('Use gameCommonRequestDescriptor instead')
 const GameCommonRequest$json = const {
   '1': 'GameCommonRequest',

@@ -16,9 +16,9 @@ export 'room.pb.dart';
 
 class RoomServiceClient extends $grpc.Client {
   static final _$createRoom =
-      $grpc.ClientMethod<$0.RoomCommonRequest, $0.RoomCommonReply>(
+      $grpc.ClientMethod<$0.CreateRoomRequest, $0.RoomCommonReply>(
           '/RoomService/CreateRoom',
-          ($0.RoomCommonRequest value) => value.writeToBuffer(),
+          ($0.CreateRoomRequest value) => value.writeToBuffer(),
           ($core.List<$core.int> value) =>
               $0.RoomCommonReply.fromBuffer(value));
   static final _$joinRoom =
@@ -59,7 +59,7 @@ class RoomServiceClient extends $grpc.Client {
       : super(channel, options: options, interceptors: interceptors);
 
   $grpc.ResponseFuture<$0.RoomCommonReply> createRoom(
-      $0.RoomCommonRequest request,
+      $0.CreateRoomRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$createRoom, request, options: options);
   }
@@ -103,12 +103,12 @@ abstract class RoomServiceBase extends $grpc.Service {
   $core.String get $name => 'RoomService';
 
   RoomServiceBase() {
-    $addMethod($grpc.ServiceMethod<$0.RoomCommonRequest, $0.RoomCommonReply>(
+    $addMethod($grpc.ServiceMethod<$0.CreateRoomRequest, $0.RoomCommonReply>(
         'CreateRoom',
         createRoom_Pre,
         false,
         false,
-        ($core.List<$core.int> value) => $0.RoomCommonRequest.fromBuffer(value),
+        ($core.List<$core.int> value) => $0.CreateRoomRequest.fromBuffer(value),
         ($0.RoomCommonReply value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.RoomCommonRequest, $0.RoomMessage>(
         'JoinRoom',
@@ -155,7 +155,7 @@ abstract class RoomServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.RoomCommonReply> createRoom_Pre($grpc.ServiceCall call,
-      $async.Future<$0.RoomCommonRequest> request) async {
+      $async.Future<$0.CreateRoomRequest> request) async {
     return createRoom(call, await request);
   }
 
@@ -190,7 +190,7 @@ abstract class RoomServiceBase extends $grpc.Service {
   }
 
   $async.Future<$0.RoomCommonReply> createRoom(
-      $grpc.ServiceCall call, $0.RoomCommonRequest request);
+      $grpc.ServiceCall call, $0.CreateRoomRequest request);
   $async.Stream<$0.RoomMessage> joinRoom(
       $grpc.ServiceCall call, $0.RoomCommonRequest request);
   $async.Future<$0.RoomCommonReply> leaveRoom(

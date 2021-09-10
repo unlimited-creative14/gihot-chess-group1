@@ -12,7 +12,7 @@ message MoveChessRequest {
 }
 
 message GameCreateRequest {
-  string room_id = 1;
+  int32 bet_amount = 1;
   repeated string playerIds = 2;
 }
 
@@ -33,4 +33,6 @@ service GameService {
   rpc SubscribeGame(GameCommonRequest) returns (stream GameCommonReply);
   rpc GuestSubscribeGame(google.protobuf.Empty) returns (stream GameCommonReply);
   rpc SendMove(MoveChessRequest) returns (GameCommonReply);
+  rpc LeaveGame(GameCommonRequest) returns (GameCommonReply);
 }
+

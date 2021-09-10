@@ -381,7 +381,7 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     listenChat.cancel();
     listenGame.cancel();
     // unsubscribe game
-    // TODO
+    gameService.leaveGame(gameId, playerId);
     super.dispose();
   }
 
