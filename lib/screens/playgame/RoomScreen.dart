@@ -45,12 +45,18 @@ class _RoomScreenState extends State<RoomScreen> {
   ];
   var friendList = ["a"];
   var friendStatus = [false];
+  var listChatMessageInLobby = [LobbyChat()];
+  // list new chat of some friend
+  var newChat = [false];
+  // when have new chat, it set to true
+  bool havingNewChat = false;
   int friendSelectedIdx = 0;
   String chattingMessageLobby = "";
   var chatLobbyController = TextEditingController();
-  var listChatMessageInLobby = [LobbyChat()];
   bool haveFriend = false;
   String newFriendId = "";
+
+  var timmerGetStatus;
 
   void changeWaitingState(bool targetState) {
     setState(() {
@@ -193,12 +199,25 @@ class _RoomScreenState extends State<RoomScreen> {
   }
 
   void sendChatInLobby(
-      String playerId, String username, String chattingMessage) {
+      String playerId, String friendId, String chattingMessage) async {
     // send chat to server
-
-    // add new chat to screen
-    listChatMessageInLobby[friendSelectedIdx]
-        .addnewchat(Chat(message: chattingMessage, username: widget.id));
+    try {
+      var respone =
+          await lobbyService.sendChat(playerId, friendId, chattingMessage);
+      if (respone.type.toString() == "Error") {
+        alertMsg("Bạn của bạn đã offline");
+      } else {
+        // add new chat to screen
+        if (mounted)
+          setState(() {
+            listChatMessageInLobby[friendSelectedIdx].addnewchat(
+                Chat(message: chattingMessage, username: widget.id));
+          });
+      }
+    } catch (e) {
+      alertMsg("Lỗi");
+      print("Error send chat message : $e");
+    }
     // clear chat box
     chatLobbyController.clear();
   }
@@ -237,7 +256,22 @@ class _RoomScreenState extends State<RoomScreen> {
       // new frient request
       var msgs = reply.message.toString().split(":");
       if (msgs.length > 1) {
-        showFriendRequest(msgs[1]);
+        showFriendRequest(msgs[1], "1");
+      }
+    } else if (reply.type.toString() == "Friend") {
+      // receive chat message
+      var msgs = reply.message.toString().split(":");
+      if (msgs.length > 2) {
+        int idx = friendList.indexOf(msgs[1]);
+        if (mounted)
+          setState(() {
+            if (friendSelectedIdx != idx) {
+              newChat[idx] = true;
+              havingNewChat = true;
+            }
+            listChatMessageInLobby[idx]
+                .addnewchat(Chat(message: msgs[2], username: msgs[1]));
+          });
       }
     }
   }
@@ -260,6 +294,8 @@ class _RoomScreenState extends State<RoomScreen> {
             index == respone.friendList.length - 1 ? true : false;
         if (index == 0) {
           int _index = index;
+          friendList[0] = friend.playerId;
+          friendStatus[0] = friend.online;
           getInforAndPutInto(friend.playerId, _index, setStateAffter);
           index += 1;
           continue;
@@ -268,6 +304,8 @@ class _RoomScreenState extends State<RoomScreen> {
             "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png");
         friendStatus.add(friend.online);
         friendList.add(friend.playerId);
+        newChat.add(false);
+        listChatMessageInLobby.add(new LobbyChat());
         int _index = index;
         getInforAndPutInto(friend.playerId, _index, setStateAffter);
         index += 1;
@@ -282,25 +320,25 @@ class _RoomScreenState extends State<RoomScreen> {
     listenLobby();
   }
 
-  void acceptFriendRequest(String id) async {
+  void acceptFriendRequest(String requestId, String friendId) async {
     try {
-      var respone = await lobbyService.acceptFriendRequest(widget.id, id);
+      var respone = await lobbyService.acceptFriendRequest(requestId);
       if (respone.type.toString() == "Error") {
         print(respone);
         alertMsg("Lời mời đã hết hạn");
       } else {
         alertMsg("Chấp nhận kết bạn thành công");
         haveFriend = true;
-        insertNewFriend(id);
+        insertNewFriend(friendId);
       }
     } catch (e) {
       print("Error accept friend request : $e");
     }
   }
 
-  void declineFriendRequest(String id) async {
+  void declineFriendRequest(String requestId) async {
     try {
-      var respone = await lobbyService.acceptFriendRequest(widget.id, id);
+      var respone = await lobbyService.acceptFriendRequest(requestId);
       if (respone.type.toString() == "Error") {
         alertMsg("Lời mời đã hết hạn");
       } else {
@@ -318,10 +356,46 @@ class _RoomScreenState extends State<RoomScreen> {
           "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png");
       friendStatus.add(true);
       friendList.add(id);
+      newChat.add(false);
+      listChatMessageInLobby.add(new LobbyChat());
       int _index = friendList.length - 1;
       getInforAndPutInto(id, _index, true);
     } else {
+      friendList[0] = id;
+      friendStatus[0] = true;
       getInforAndPutInto(id, 0, true);
+    }
+  }
+
+  void excuteNewChat(int index) {
+    newChat[index] = false;
+    havingNewChat = false;
+    for (bool chat in newChat) {
+      if (chat == true) {
+        havingNewChat = true;
+        break;
+      }
+    }
+    if (mounted) setState(() {});
+  }
+
+  void gettingStatusesOfFriends() async {
+    try {
+      var respone = await lobbyService.getFriendList(widget.id);
+      bool changed = false;
+      int idx = 0;
+      for (var friend in respone.friendList) {
+        // foreach friend , get information
+        if (friendStatus[idx] != friend.online) {
+          changed = true;
+          friendStatus[idx] = friend.online;
+        }
+      }
+      if (changed && mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      print("Error get frient list : $e");
     }
   }
 
@@ -409,7 +483,7 @@ class _RoomScreenState extends State<RoomScreen> {
     );
   }
 
-  Future<void> showFriendRequest(String id) async {
+  Future<void> showFriendRequest(String requestId, String friendId) async {
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -421,7 +495,7 @@ class _RoomScreenState extends State<RoomScreen> {
               child: ListBody(
                 children: <Widget>[
                   Text(
-                    "Bạn nhận được lời mời kết bạn từ : $id",
+                    "Bạn nhận được lời mời kết bạn từ : $friendId",
                     style: TextStyle(fontSize: 18, color: Colors.black),
                   )
                 ],
@@ -431,14 +505,14 @@ class _RoomScreenState extends State<RoomScreen> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  acceptFriendRequest(id);
+                  acceptFriendRequest(requestId, friendId);
                 },
                 child: Text("Chấp nhận"),
               ),
               TextButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    declineFriendRequest(id);
+                    declineFriendRequest(requestId);
                   },
                   child: Text("Từ chối"))
             ],
@@ -452,7 +526,16 @@ class _RoomScreenState extends State<RoomScreen> {
   void initState() {
     WidgetsBinding.instance!
         .addPostFrameCallback((_) => excuteAfterBuildingComplete());
+    // timmerGetStatus = Timer.periodic(Duration(seconds: 5), (timer) {
+    //   gettingStatusesOfFriends();
+    // });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // timmerGetStatus.cancel();
+    super.dispose();
   }
 
   @override
@@ -636,7 +719,7 @@ class _RoomScreenState extends State<RoomScreen> {
                                                   color: Colors.black,
                                                 ),
                                               ),
-                                              hintText: "Type message here",
+                                              hintText: "Nhập lời nhắn",
                                               fillColor: Colors.black,
                                               enabledBorder:
                                                   UnderlineInputBorder(
@@ -675,9 +758,11 @@ class _RoomScreenState extends State<RoomScreen> {
                                         ),
                                         child: GestureDetector(
                                           onTap: () {
-                                            setState(() {
-                                              friendSelectedIdx = index;
-                                            });
+                                            excuteNewChat(index);
+                                            if (mounted)
+                                              setState(() {
+                                                friendSelectedIdx = index;
+                                              });
                                           },
                                           child: Column(
                                             mainAxisAlignment:
@@ -698,23 +783,43 @@ class _RoomScreenState extends State<RoomScreen> {
                                                         imageUrl[index]),
                                                   ),
                                                 ),
-                                                child: Container(
-                                                  margin: EdgeInsets.fromLTRB(
-                                                      size.width * 0.11,
-                                                      0,
-                                                      0,
-                                                      size.width * 0.11),
-                                                  height: size.width * 0.04,
-                                                  width: size.width * 0.04,
-                                                  decoration: BoxDecoration(
-                                                    color: friendStatus[index]
-                                                        ? Colors.green
-                                                        : Colors.white,
-                                                    borderRadius: BorderRadius
-                                                        .all(Radius.circular(
-                                                            size.width * 0.02)),
+                                                child: Stack(children: [
+                                                  Container(
+                                                    margin: EdgeInsets.fromLTRB(
+                                                        size.width * 0.11,
+                                                        0,
+                                                        0,
+                                                        size.width * 0.11),
+                                                    height: size.width * 0.04,
+                                                    width: size.width * 0.04,
+                                                    decoration: BoxDecoration(
+                                                      color: friendStatus[index]
+                                                          ? Colors.green
+                                                          : Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.all(
+                                                              Radius.circular(
+                                                                  size.width *
+                                                                      0.02)),
+                                                    ),
                                                   ),
-                                                ),
+                                                  Visibility(
+                                                    visible: newChat[index],
+                                                    child: Container(
+                                                      height: size.width * 0.02,
+                                                      width: size.width * 0.02,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                          Radius.circular(
+                                                              size.width *
+                                                                  0.01),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
+                                                ]),
                                               ),
                                               Text(
                                                 friendList[index],
@@ -771,6 +876,25 @@ class _RoomScreenState extends State<RoomScreen> {
                       height: size.width * 0.1,
                       width: size.width * 0.1,
                       margin: EdgeInsets.fromLTRB(
+                          size.width * 0.9, size.height * 0.4, 0, 0),
+                      child: GestureDetector(
+                        onTap: () {
+                          openBoxAddFriend();
+                        },
+                        child: Icon(
+                          Icons.plus_one,
+                          color: light_blue,
+                          size: size.width * 0.1,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Visibility(
+                    visible: !friendVisiable,
+                    child: Container(
+                      height: size.width * 0.1,
+                      width: size.width * 0.1,
+                      margin: EdgeInsets.fromLTRB(
                           size.width * 0.9, size.height * 0.5, 0, 0),
                       child: GestureDetector(
                         onTap: () {
@@ -784,11 +908,26 @@ class _RoomScreenState extends State<RoomScreen> {
                             openBoxAddFriend();
                           }
                         },
-                        child: Icon(
-                          Icons.people,
-                          color: light_blue,
-                          size: size.width * 0.1,
-                        ),
+                        child: Stack(children: [
+                          Icon(
+                            Icons.people,
+                            color: light_blue,
+                            size: size.width * 0.1,
+                          ),
+                          Visibility(
+                            visible: havingNewChat,
+                            child: Container(
+                              height: size.width * 0.02,
+                              width: size.width * 0.02,
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(size.width * 0.01),
+                                ),
+                              ),
+                            ),
+                          )
+                        ]),
                       ),
                     ),
                   ),

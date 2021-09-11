@@ -28,20 +28,14 @@ class LobbyService {
       ..playerId2 = friendId);
   }
 
-  Future<LobbyCommonReply> acceptFriendRequest(
-      String playerId, String friendId) {
-    return lobbyServiceClient.acceptFriendRequest(FriendRequest()
-      ..id = playerId
-      ..playerId = playerId
-      ..playerId2 = friendId);
+  Future<LobbyCommonReply> acceptFriendRequest(String requestId) {
+    return lobbyServiceClient
+        .acceptFriendRequest(FriendRequest()..id = requestId);
   }
 
-  Future<LobbyCommonReply> declineFriendRequest(
-      String playerId, String friendId) {
-    return lobbyServiceClient.declineFriendRequest(FriendRequest()
-      ..id = playerId
-      ..playerId = playerId
-      ..playerId2 = friendId);
+  Future<LobbyCommonReply> declineFriendRequest(String requestId) {
+    return lobbyServiceClient
+        .declineFriendRequest(FriendRequest()..id = requestId);
   }
 
   Future<LobbyCommonReply> sendChat(
