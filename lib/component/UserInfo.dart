@@ -9,5 +9,16 @@ class UserService {
     return userServiceClient.getUserInfo(UserInfoRequest()
         ..username = username);
   }
+  Future<newUserReply> newUser (String username,String display_name,String photo_url) async {
+    return userServiceClient.newUser(newUserRequest()
+        ..username = username
+        ..displayName = display_name
+        ..photoUrl = photo_url);
+  }
+
+  Future<UserExist> isExist (String username) async {
+    return userServiceClient.isExist(UserInfoRequest()
+        ..username = username);
+  }
 
 }

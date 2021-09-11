@@ -1,6 +1,6 @@
 import 'package:grpc/grpc.dart';
 
-const baseUrl = "192.168.1.8";
+const baseUrl = "192.168.1.229";
 const port = 9191;
 const game_port = 9192;
 

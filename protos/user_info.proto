@@ -3,6 +3,16 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "vn.gihot.chess.gserver.message.UserMessage";
 
+message newUserRequest {
+  string username = 1;
+  string display_name = 2;
+  string photo_url = 3;
+}
+
+message newUserReply {
+  string success = 1;
+}
+
 message UserInfoRequest {
   string username = 1;
 }
@@ -10,12 +20,19 @@ message UserInfoRequest {
 message UserInfoReply {
   string success = 1;
   string username = 2;
-  int32 gameCurrency = 3;
-  repeated string friendList_id = 4;
-  string status = 5;
+  string display_name = 3;
+  int32 gameCurrency = 4;
+  repeated string friendList_id = 5;
+  string status = 6;
+  string photo_url = 7;
 }
 
+message UserExist {
+  bool isExist = 1;
+}
 
 service UserService {
   rpc getUserInfo(UserInfoRequest) returns (UserInfoReply);
+  rpc NewUser(newUserRequest) returns (newUserReply);
+  rpc isExist (UserInfoRequest) returns (UserExist);
 }

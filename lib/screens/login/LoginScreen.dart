@@ -104,12 +104,18 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await _googleSignIn.signIn();
       if (_currentUser != null) {
-        UserInfoReply user = await userService.getUserInfo(_currentUser!.id);
+        UserExist isExist = await userService.isExist(_currentUser!.email);
+        if (!isExist.isExist) {
+          newUserReply newUser = await userService.newUser(_currentUser!.email,
+                                                            _currentUser!.displayName.toString(),
+                                                            _currentUser!.photoUrl.toString());
+        }
+        UserInfoReply user = await userService.getUserInfo(_currentUser!.email);
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => HomeScreen(
-              id: _currentUser!.id,
+              id: _currentUser!.email,
             ),
           ),
         );
@@ -133,13 +139,26 @@ class _LoginScreenState extends State<LoginScreen> {
     switch (result.status) {
       case FacebookLoginStatus.loggedIn:
         final FacebookAccessToken accessToken = result.accessToken;
-        UserInfoReply user = await userService.getUserInfo(accessToken.userId);
+        final token = result.accessToken.token;
+        final graphResponse = await http.get(
+            Uri.parse('https://graph.facebook.com/v2.12/me?fields=name,picture.width(800).height(800),first_name,last_name,email&access_token=${token}'));
+        final profile = json.decode(graphResponse.body);
+        print(profile);
+        UserExist isExist = await userService.isExist(profile['email']);
+        if (!isExist.isExist) {
+          newUserReply newUser = await userService.newUser(profile['email'],
+              profile['name'],
+              profile['picture']['data']['url']);
+        }
+
+
+        UserInfoReply user = await userService.getUserInfo(profile['email']);
 
         Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => HomeScreen(
-                      id: accessToken.userId,
+                      id: profile['email'],
                     )));
         break;
       case FacebookLoginStatus.cancelledByUser:
