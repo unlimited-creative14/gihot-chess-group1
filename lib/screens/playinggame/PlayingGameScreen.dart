@@ -71,6 +71,9 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   AudioCache boomAudio = AudioCache();
   AudioCache clickAudio = AudioCache();
 
+  bool isFinishtMatch = false;
+  String resultMatch = "Chiến thắng";
+
   var listenChat;
   var listenGame;
 
@@ -174,6 +177,7 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
 
   void onreply(GameCommonReply reply) {
     // when recieve reply from server
+    print(reply);
     if (reply.isError) {
       Navigator.pop(context);
       print(reply.msg);
@@ -206,6 +210,10 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
             });
             timer.cancel();
           }
+        });
+      } else if (msgs[1] == "winner") {
+        setState(() {
+          isFinishtMatch = true;
         });
       }
     } else {
@@ -637,6 +645,42 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
                       "Vui lòng đợi đối thủ",
                       style: TextStyle(fontSize: 25, color: Colors.white),
                     ),
+                  ),
+                ),
+              ),
+              Visibility(
+                visible: isFinishtMatch,
+                child: Center(
+                  child: Container(
+                    height: size.height * 0.5,
+                    width: size.width,
+                    color: bg_dark,
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text(
+                            resultMatch,
+                            style: TextStyle(fontSize: 25, color: Colors.white),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                  color: light_blue),
+                              child: Text(
+                                "Quay về phòng",
+                                style: TextStyle(
+                                    fontSize: 25, color: Colors.black),
+                              ),
+                            ),
+                          )
+                        ]),
                   ),
                 ),
               ),

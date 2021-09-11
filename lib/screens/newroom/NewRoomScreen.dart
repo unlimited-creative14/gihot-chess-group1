@@ -63,6 +63,8 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
 
   bool ishost = false;
 
+  String opponentsId = "";
+
   void onreply(RoomMessage roomMessage) {
     print("Reply from server: ");
     print(roomMessage);
@@ -124,7 +126,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   // when host click start button, server will respone message to bolth host and client
   // so this funtion will be run
   void subcribeGame(String gameId) {
-    String opponentsId = ishost ? Ids[1] : Ids[0];
+    String _opponentsId = ishost ? opponentsId : widget.hostId;
     int playerColor = ishost ? 1 : -1;
     Stream<GameCommonReply> subscribeGame =
         gameService.subscribeGame(gameId, playerId);
@@ -134,7 +136,7 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
         builder: (context) => PlayingGameScreen(
           gameId: gameId,
           playerId: playerId,
-          opponentsId: opponentsId,
+          opponentsId: _opponentsId,
           playerColor: playerColor,
           chatService: widget.roomMesasge,
           gameService: subscribeGame,
@@ -146,12 +148,9 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
 
   void newPlayer(String playerId) {
     // Toto : get info player and put when complete
-    setState(() {
-      if (ishost) {
-        Ids[1] = playerId.toString();
-        have_opponent = true;
-      }
-    });
+    getInforAndPutTo(1, playerId);
+    have_opponent = true;
+    opponentsId = playerId;
   }
 
   void showalert(String message) {
@@ -203,22 +202,13 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
     }
     if (ishost) {
       // get information of the player
-      if (mounted)
-        setState(() {
-          Ids[0] = widget.playerId;
-          roomId = widget.roomId;
-        });
+      roomId = widget.roomId;
       getInforAndPutTo(0, playerId);
     } else {
       // get information of the player and the opponents
-      if (mounted)
-        setState(() {
-          roomId = widget.roomId;
-          Ids[0] = widget.hostId;
-          Ids[1] = widget.playerId;
-          hostId = widget.hostId;
-          have_opponent = true;
-        });
+      roomId = widget.roomId;
+      hostId = widget.hostId;
+      have_opponent = true;
       getInforAndPutTo(0, widget.hostId);
       getInforAndPutTo(1, playerId);
     }
@@ -238,7 +228,8 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
         setState(() {
           ishost = true;
           have_opponent = false;
-          Ids[0] = playerId;
+          Ids[0] = Ids[1];
+          CurrencyList[0] = CurrencyList[1];
         });
       }
     }
@@ -261,11 +252,11 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
     if (index < 2) {
       try {
         var respone = await userService.getUserInfo(id);
-        // Images[id] = respone.imageurl
+        Images[index] = respone.photoUrl;
+        CurrencyList[index] = respone.gameCurrency;
+        Ids[index] = respone.displayName;
         if (mounted) {
-          setState(() {
-            CurrencyList[index] = respone.gameCurrency;
-          });
+          setState(() {});
         }
       } catch (e) {
         showalert("Lỗi");

@@ -38,9 +38,10 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => RoomScreen(
-          id: widget.id,
-          lobbyStream: joinLobby,
-        ),
+            id: widget.id,
+            lobbyStream: joinLobby,
+            currency: currency,
+            imageUrl: imageUrl),
       ),
     );
   }
@@ -77,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           currency = respone.gameCurrency;
-          // imageUrl = respone.image;
+          imageUrl = respone.photoUrl;
         });
       }
     } catch (e) {
@@ -152,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius:
                           BorderRadius.all(Radius.circular(size.height * 0.05)),
                       child: Image.network(
-                        "https://gamebaiapk.com/wp-content/uploads/2020/06/chinese-chess-xiangqi-110120.png",
+                        imageUrl,
                         height: size.height * 0.1,
                       ),
                     ),

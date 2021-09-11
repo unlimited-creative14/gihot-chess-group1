@@ -106,9 +106,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_currentUser != null) {
         UserExist isExist = await userService.isExist(_currentUser!.email);
         if (!isExist.isExist) {
-          newUserReply newUser = await userService.newUser(_currentUser!.email,
-                                                            _currentUser!.displayName.toString(),
-                                                            _currentUser!.photoUrl.toString());
+          newUserReply newUser = await userService.newUser(
+              _currentUser!.email,
+              _currentUser!.displayName.toString(),
+              _currentUser!.photoUrl.toString());
         }
         UserInfoReply user = await userService.getUserInfo(_currentUser!.email);
         Navigator.push(
@@ -140,17 +141,15 @@ class _LoginScreenState extends State<LoginScreen> {
       case FacebookLoginStatus.loggedIn:
         final FacebookAccessToken accessToken = result.accessToken;
         final token = result.accessToken.token;
-        final graphResponse = await http.get(
-            Uri.parse('https://graph.facebook.com/v2.12/me?fields=name,picture.width(800).height(800),first_name,last_name,email&access_token=${token}'));
+        final graphResponse = await http.get(Uri.parse(
+            'https://graph.facebook.com/v2.12/me?fields=name,picture.width(800).height(800),first_name,last_name,email&access_token=${token}'));
         final profile = json.decode(graphResponse.body);
         print(profile);
         UserExist isExist = await userService.isExist(profile['email']);
         if (!isExist.isExist) {
           newUserReply newUser = await userService.newUser(profile['email'],
-              profile['name'],
-              profile['picture']['data']['url']);
+              profile['name'], profile['picture']['data']['url']);
         }
-
 
         UserInfoReply user = await userService.getUserInfo(profile['email']);
 
@@ -188,12 +187,13 @@ class _LoginScreenState extends State<LoginScreen> {
     // submit with email and password variables
     // var respone = await accountService.login(email, password);
     // print(respone);
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => HomeScreen(
-                  id: "hailong",
-                )));
+    if (email == "long1" || email == "long2")
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => HomeScreen(
+                    id: email,
+                  )));
   }
 
   void signup(context) {
@@ -206,115 +206,120 @@ class _LoginScreenState extends State<LoginScreen> {
     Size size = MediaQuery.of(context).size;
     return Scaffold(
       body: WelcomeBackground(
-        child: SingleChildScrollView(
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).requestFocus(new FocusNode());
+          },
           child: Container(
             alignment: Alignment.center,
             color: bg_transpearent,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 30),
-                  child: CircleChessBackground(),
-                ),
-                Text(
-                  "Đăng nhập",
-                  style: TextStyle(
-                    fontSize: 25,
-                    color: Colors.white,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 30),
+                    child: CircleChessBackground(),
                   ),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                TextContainer(
-                  child: TextField(
-                    onChanged: (text) {
-                      this.email = text;
-                    },
-                    decoration: InputDecoration(
-                        icon: Icon(
-                          Icons.email,
-                          color: dark_blue,
-                        ),
-                        hintText: "email"),
+                  Text(
+                    "Đăng nhập",
+                    style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                TextContainer(
-                  child: TextField(
-                    onChanged: (text) {
-                      this.password = text;
-                    },
-                    obscureText: obscurePassword,
-                    decoration: InputDecoration(
-                        icon: Icon(
-                          Icons.lock,
-                          color: dark_blue,
-                        ),
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            changeHideShowPass();
-                          },
-                          child: Icon(
-                            Icons.visibility,
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  TextContainer(
+                    child: TextField(
+                      onChanged: (text) {
+                        this.email = text;
+                      },
+                      decoration: InputDecoration(
+                          icon: Icon(
+                            Icons.email,
                             color: dark_blue,
                           ),
-                        ),
-                        hintText: "mật khẩu"),
-                  ),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                Container(
-                  width: size.width * 0.8,
-                  child: RoundedButton(
-                      text: "Đăng nhập",
-                      onpress: () {
-                        submit(context);
-                      }),
-                ),
-                Container(
-                  width: size.width * 0.8,
-                  child: RoundedButton(
-                      text: "Đăng nhập với FB",
-                      onpress: () {
-                        _login();
-                      }),
-                ),
-                Container(
-                  width: size.width * 0.8,
-                  child: RoundedButton(
-                      text: "Đăng nhập với GG",
-                      onpress: () {
-                        _handleSignIn();
-                      }),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Chưa có tài khoản ? ",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
+                          hintText: "email"),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        signup(context);
+                  ),
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  TextContainer(
+                    child: TextField(
+                      onChanged: (text) {
+                        this.password = text;
                       },
-                      child: Text(
-                        "Đăng kí ngay",
-                        style: TextStyle(fontSize: 20, color: dark_blue),
+                      obscureText: obscurePassword,
+                      decoration: InputDecoration(
+                          icon: Icon(
+                            Icons.lock,
+                            color: dark_blue,
+                          ),
+                          suffixIcon: GestureDetector(
+                            onTap: () {
+                              changeHideShowPass();
+                            },
+                            child: Icon(
+                              Icons.visibility,
+                              color: dark_blue,
+                            ),
+                          ),
+                          hintText: "mật khẩu"),
+                    ),
+                  ),
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  Container(
+                    width: size.width * 0.8,
+                    child: RoundedButton(
+                        text: "Đăng nhập",
+                        onpress: () {
+                          submit(context);
+                        }),
+                  ),
+                  Container(
+                    width: size.width * 0.8,
+                    child: RoundedButton(
+                        text: "Đăng nhập với FB",
+                        onpress: () {
+                          _login();
+                        }),
+                  ),
+                  Container(
+                    width: size.width * 0.8,
+                    child: RoundedButton(
+                        text: "Đăng nhập với GG",
+                        onpress: () {
+                          _handleSignIn();
+                        }),
+                  ),
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Chưa có tài khoản ? ",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
-                    )
-                  ],
-                )
-              ],
+                      GestureDetector(
+                        onTap: () {
+                          signup(context);
+                        },
+                        child: Text(
+                          "Đăng kí ngay",
+                          style: TextStyle(fontSize: 20, color: dark_blue),
+                        ),
+                      )
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
         ),

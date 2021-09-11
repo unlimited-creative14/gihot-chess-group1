@@ -18,7 +18,14 @@ import 'package:frontend/screens/newroom/NewRoomScreen.dart';
 class RoomScreen extends StatefulWidget {
   final String id;
   final Stream<LobbyCommonReply> lobbyStream;
-  const RoomScreen({Key? key, required this.id, required this.lobbyStream})
+  final int currency;
+  final String imageUrl;
+  const RoomScreen(
+      {Key? key,
+      required this.id,
+      required this.lobbyStream,
+      required this.currency,
+      required this.imageUrl})
       : super(key: key);
   @override
   _RoomScreenState createState() => _RoomScreenState();
@@ -58,6 +65,9 @@ class _RoomScreenState extends State<RoomScreen> {
 
   var timmerGetStatus;
 
+  var hotGameLoop;
+  String findingRoom = "";
+
   void changeWaitingState(bool targetState) {
     setState(() {
       isWaiting = !isWaiting;
@@ -80,8 +90,41 @@ class _RoomScreenState extends State<RoomScreen> {
     Navigator.pop(context);
   }
 
-  void hotGame(context) {}
-  void cancelGame(context) {}
+  void hotGame(context) {
+    // hotGameAmount();
+    hotGameLoopFunc(0);
+  }
+
+  void hotGameLoopFunc(int bet) {
+    hotGameLoop = Timer.periodic(Duration(seconds: 3), (timer) {
+      getAllRoom(bet);
+      if (findingRoom.length > 0) {
+        stopTimer = true;
+        findroom(findingRoom);
+        changeWaitingState(false);
+        timer.cancel();
+      }
+    });
+  }
+
+  void getAllRoom(int bet) async {
+    try {
+      var respone = await roomService.getAllRoom();
+      for (var room in respone.rooms) {
+        print(room);
+        print("==========");
+        if (room.playerIds.length == 1) {
+          findingRoom = room.roomId;
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void cancelGame(context) {
+    hotGameLoop.cancel();
+  }
 
   void commonGame(int betAmount) async {
     var respone = await roomService.createRoom(widget.id, betAmount);
@@ -225,7 +268,7 @@ class _RoomScreenState extends State<RoomScreen> {
   void getInforAndPutInto(String id, int index, bool setStateAfter) async {
     try {
       var respone = await userService.getUserInfo(id);
-      // imageUrl[index] = respone.imageurl
+      imageUrl[index] = respone.photoUrl;
       if (setStateAfter) {
         if (mounted) setState(() {});
       }
@@ -255,8 +298,13 @@ class _RoomScreenState extends State<RoomScreen> {
     if (reply.type.toString() == "System") {
       // new frient request
       var msgs = reply.message.toString().split(":");
-      if (msgs.length > 1) {
-        showFriendRequest(msgs[1], "1");
+      if (msgs.length == 3) {
+        showFriendRequest(msgs[1], msgs[2]);
+      } else if (msgs[3] == "accepted") {
+        alertMsg("Yêu cầu đã được chấp nhận");
+        insertNewFriend(msgs[2]);
+      } else {
+        alertMsg("Yêu cầu đã bị từ chối");
       }
     } else if (reply.type.toString() == "Friend") {
       // receive chat message
@@ -328,7 +376,6 @@ class _RoomScreenState extends State<RoomScreen> {
         alertMsg("Lời mời đã hết hạn");
       } else {
         alertMsg("Chấp nhận kết bạn thành công");
-        haveFriend = true;
         insertNewFriend(friendId);
       }
     } catch (e) {
@@ -365,6 +412,7 @@ class _RoomScreenState extends State<RoomScreen> {
       friendStatus[0] = true;
       getInforAndPutInto(id, 0, true);
     }
+    haveFriend = true;
   }
 
   void excuteNewChat(int index) {
@@ -436,6 +484,56 @@ class _RoomScreenState extends State<RoomScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                   commonGame(betValues[betAmountIndex]);
+                },
+                child: Text("Đồng ý"),
+              )
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Future<void> hotGameAmount() async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+          return AlertDialog(
+            title: Text("Chọn số tiền bạn muốn cược"),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  Text(
+                    betValues[betAmountIndex].toString(),
+                    style: TextStyle(fontSize: 20, color: Colors.black),
+                  ),
+                  Slider(
+                    value: betAmountIndex.toDouble(),
+                    onChanged: (value) {
+                      if (mounted) {
+                        setState(() {
+                          betAmountIndex = value.toInt();
+                        });
+                      }
+                    },
+                    min: 0,
+                    max: 4,
+                    divisions: 4,
+                  )
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  if (betValues[betAmountIndex] > widget.currency) {
+                    alertMsg("Bạn không đủ tiền");
+                  } else {
+                    Navigator.pop(context);
+                    hotGameLoopFunc(betValues[betAmountIndex]);
+                  }
                 },
                 child: Text("Đồng ý"),
               )
@@ -952,7 +1050,8 @@ class _RoomScreenState extends State<RoomScreen> {
                         changeWaitingState(false);
                       }),
                   SizedBox(height: size.width * 0.1),
-                  Image.asset("assets/images/profile.png"),
+                  Image.network(widget.imageUrl,
+                      width: size.width * 0.3, height: size.width * 0.3),
                   SizedBox(height: size.width * 0.1),
                   Text(
                     "Đợi người chơi khác",
