@@ -125,12 +125,12 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
   // subcribe game
   // when host click start button, server will respone message to bolth host and client
   // so this funtion will be run
-  void subcribeGame(String gameId) {
+  void subcribeGame(String gameId) async {
     String _opponentsId = ishost ? opponentsId : widget.hostId;
     int playerColor = ishost ? 1 : -1;
     Stream<GameCommonReply> subscribeGame =
         gameService.subscribeGame(gameId, playerId);
-    Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PlayingGameScreen(
@@ -144,6 +144,15 @@ class _NewRoomScreenState extends State<NewRoomScreen> {
         ),
       ),
     );
+
+    print("get infor again");
+    if (ishost) {
+      getInforAndPutTo(0, playerId);
+      getInforAndPutTo(1, opponentsId);
+    } else {
+      getInforAndPutTo(1, playerId);
+      getInforAndPutTo(0, opponentsId);
+    }
   }
 
   void newPlayer(String playerId) {

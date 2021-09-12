@@ -30,9 +30,7 @@
 .pub-cache/
 .pub/
 /build/
-/lib/component/baseUrl.dart
 # /lib/generated/
-
 
 # Web related
 lib/generated_plugin_registrant.dart

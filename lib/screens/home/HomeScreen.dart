@@ -6,6 +6,7 @@ import 'package:frontend/component/UserInfo.dart';
 import 'package:frontend/constant/color.dart';
 import 'package:frontend/screens/components/RoundedButton.dart';
 import 'package:frontend/screens/components/WelcomeBackground.dart';
+import 'package:frontend/screens/introduction/Introduction.dart';
 import 'package:frontend/screens/playgame/RoomScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -55,13 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void introduction(context) {
-    //
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => Introduction()));
   }
 
   void logout(context) {
-    Navigator.pop(
-        context, true
-    );
+    Navigator.pop(context, true);
   }
 
   void openSetting() {
@@ -175,15 +175,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       start(context);
                     }),
               ),
-              SizedBox(height: size.height * 0.02),
-              Container(
-                width: size.width * 0.8,
-                child: RoundedButton(
-                    text: "Chơi với máy",
-                    onpress: () {
-                      botplay(context);
-                    }),
-              ),
+              // SizedBox(height: size.height * 0.02),
+              // Container(
+              //   width: size.width * 0.8,
+              //   child: RoundedButton(
+              //       text: "Chơi với máy",
+              //       onpress: () {
+              //         botplay(context);
+              //       }),
+              // ),
               SizedBox(height: size.height * 0.02),
               Container(
                   width: size.width * 0.8,
