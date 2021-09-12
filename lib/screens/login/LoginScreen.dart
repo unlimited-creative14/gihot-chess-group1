@@ -101,6 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleSignIn() async {
+    bool result = false;
     try {
       await _googleSignIn.signIn();
       if (_currentUser != null) {
@@ -112,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _currentUser!.photoUrl.toString());
         }
         UserInfoReply user = await userService.getUserInfo(_currentUser!.email);
-        Navigator.push(
+        result = await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => HomeScreen(
@@ -120,6 +121,10 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         );
+      }
+      if (result) {
+        LogoutReply logout = await userService.logout(_currentUser!.email);
+        _googleSignIn.signOut();
       }
     } catch (error) {
       print(error);
@@ -135,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<Null> _login() async {
+    bool isLogout = false;
     final FacebookLoginResult result = await facebookSignIn.logIn(['email']);
 
     switch (result.status) {
@@ -153,12 +159,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
         UserInfoReply user = await userService.getUserInfo(profile['email']);
 
-        Navigator.push(
+        isLogout = await Navigator.push(
             context,
             MaterialPageRoute(
                 builder: (context) => HomeScreen(
                       id: profile['email'],
                     )));
+        if (isLogout) {
+          LogoutReply logout = await userService.logout(profile['email']);
+          facebookSignIn.logOut();
+        }
         break;
       case FacebookLoginStatus.cancelledByUser:
         _showMessage('Login cancelled by the user.');
@@ -168,6 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'Here\'s the error Facebook gave us: ${result.errorMessage}');
         break;
     }
+
   }
 
   Future<Null> _logOut() async {

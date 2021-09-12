@@ -30,9 +30,13 @@ message UserInfoReply {
 message UserExist {
   bool isExist = 1;
 }
+message LogoutReply {
+  string success = 1;
+}
 
 service UserService {
   rpc getUserInfo(UserInfoRequest) returns (UserInfoReply);
   rpc NewUser(newUserRequest) returns (newUserReply);
   rpc isExist (UserInfoRequest) returns (UserExist);
+  rpc Logout (UserInfoRequest) returns (LogoutReply);
 }

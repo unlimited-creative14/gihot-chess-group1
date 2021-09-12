@@ -58,7 +58,11 @@ class _HomeScreenState extends State<HomeScreen> {
     //
   }
 
-  void logout(context) {}
+  void logout(context) {
+    Navigator.pop(
+        context, true
+    );
+  }
 
   void openSetting() {
     setState(() {

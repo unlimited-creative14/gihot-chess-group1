@@ -28,6 +28,11 @@ class UserServiceClient extends $grpc.Client {
       '/UserService/isExist',
       ($0.UserInfoRequest value) => value.writeToBuffer(),
       ($core.List<$core.int> value) => $0.UserExist.fromBuffer(value));
+  static final _$logout =
+      $grpc.ClientMethod<$0.UserInfoRequest, $0.LogoutReply>(
+          '/UserService/Logout',
+          ($0.UserInfoRequest value) => value.writeToBuffer(),
+          ($core.List<$core.int> value) => $0.LogoutReply.fromBuffer(value));
 
   UserServiceClient($grpc.ClientChannel channel,
       {$grpc.CallOptions? options,
@@ -47,6 +52,11 @@ class UserServiceClient extends $grpc.Client {
   $grpc.ResponseFuture<$0.UserExist> isExist($0.UserInfoRequest request,
       {$grpc.CallOptions? options}) {
     return $createUnaryCall(_$isExist, request, options: options);
+  }
+
+  $grpc.ResponseFuture<$0.LogoutReply> logout($0.UserInfoRequest request,
+      {$grpc.CallOptions? options}) {
+    return $createUnaryCall(_$logout, request, options: options);
   }
 }
 
@@ -75,6 +85,13 @@ abstract class UserServiceBase extends $grpc.Service {
         false,
         ($core.List<$core.int> value) => $0.UserInfoRequest.fromBuffer(value),
         ($0.UserExist value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.UserInfoRequest, $0.LogoutReply>(
+        'Logout',
+        logout_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) => $0.UserInfoRequest.fromBuffer(value),
+        ($0.LogoutReply value) => value.writeToBuffer()));
   }
 
   $async.Future<$0.UserInfoReply> getUserInfo_Pre(
@@ -92,10 +109,17 @@ abstract class UserServiceBase extends $grpc.Service {
     return isExist(call, await request);
   }
 
+  $async.Future<$0.LogoutReply> logout_Pre(
+      $grpc.ServiceCall call, $async.Future<$0.UserInfoRequest> request) async {
+    return logout(call, await request);
+  }
+
   $async.Future<$0.UserInfoReply> getUserInfo(
       $grpc.ServiceCall call, $0.UserInfoRequest request);
   $async.Future<$0.newUserReply> newUser(
       $grpc.ServiceCall call, $0.newUserRequest request);
   $async.Future<$0.UserExist> isExist(
+      $grpc.ServiceCall call, $0.UserInfoRequest request);
+  $async.Future<$0.LogoutReply> logout(
       $grpc.ServiceCall call, $0.UserInfoRequest request);
 }

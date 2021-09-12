@@ -21,4 +21,9 @@ class UserService {
         ..username = username);
   }
 
+  Future<LogoutReply> logout (String username) async {
+    return userServiceClient.logout(UserInfoRequest()
+      ..username = username);
+  }
+
 }

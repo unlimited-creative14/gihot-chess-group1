@@ -350,3 +350,50 @@ class UserExist extends $pb.GeneratedMessage {
   void clearIsExist() => clearField(1);
 }
 
+class LogoutReply extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'LogoutReply', createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success')
+    ..hasRequiredFields = false
+  ;
+
+  LogoutReply._() : super();
+  factory LogoutReply({
+    $core.String? success,
+  }) {
+    final _result = create();
+    if (success != null) {
+      _result.success = success;
+    }
+    return _result;
+  }
+  factory LogoutReply.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory LogoutReply.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  LogoutReply clone() => LogoutReply()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  LogoutReply copyWith(void Function(LogoutReply) updates) => super.copyWith((message) => updates(message as LogoutReply)) as LogoutReply; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static LogoutReply create() => LogoutReply._();
+  LogoutReply createEmptyInstance() => create();
+  static $pb.PbList<LogoutReply> createRepeated() => $pb.PbList<LogoutReply>();
+  @$core.pragma('dart2js:noInline')
+  static LogoutReply getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<LogoutReply>(create);
+  static LogoutReply? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get success => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set success($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+}
+

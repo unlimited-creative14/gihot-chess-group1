@@ -66,3 +66,13 @@ const UserExist$json = const {
 
 /// Descriptor for `UserExist`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List userExistDescriptor = $convert.base64Decode('CglVc2VyRXhpc3QSGAoHaXNFeGlzdBgBIAEoCFIHaXNFeGlzdA==');
+@$core.Deprecated('Use logoutReplyDescriptor instead')
+const LogoutReply$json = const {
+  '1': 'LogoutReply',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 9, '10': 'success'},
+  ],
+};
+
+/// Descriptor for `LogoutReply`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List logoutReplyDescriptor = $convert.base64Decode('CgtMb2dvdXRSZXBseRIYCgdzdWNjZXNzGAEgASgJUgdzdWNjZXNz');
