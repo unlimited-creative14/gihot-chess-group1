@@ -58,6 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
     //
   }
 
+  void logout(context) {}
+
   void openSetting() {
     setState(() {
       setting = !setting;
@@ -193,6 +195,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   text: "Cài đặt",
                   onpress: () {
                     openSetting();
+                  },
+                ),
+              ),
+              SizedBox(height: size.height * 0.02),
+              Container(
+                width: size.width * 0.8,
+                child: RoundedButton(
+                  text: "Đăng xuất",
+                  onpress: () {
+                    logout(context);
                   },
                 ),
               ),

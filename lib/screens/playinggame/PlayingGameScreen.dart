@@ -178,11 +178,11 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
   void onreply(GameCommonReply reply) {
     // when recieve reply from server
     print(reply);
+    print("------------------");
     if (reply.isError) {
       Navigator.pop(context);
       print(reply.msg);
     } else if (reply.msg.toString().length == 4) {
-      print(reply.msg);
       // return a moving chess from opponent , example : "a0a1"
       // parser respone
       List<int> index = reply.msg.toString().codeUnits;
@@ -195,9 +195,10 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
           : 89 - index[2] + 97 - int.parse(reply.msg[3]) * 9;
       // update chess board
       int type = board[from ~/ 9][from % 9];
-      setState(() {
-        board[from ~/ 9][from % 9] = 0;
-      });
+      if (mounted)
+        setState(() {
+          board[from ~/ 9][from % 9] = 0;
+        });
       chessMoving(from, to, type);
     } else if (reply.msg.contains("broadcast")) {
       var msgs = reply.msg.toString().split(":");
@@ -211,10 +212,13 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
             timer.cancel();
           }
         });
-      } else if (msgs[1] == "winner") {
-        setState(() {
-          isFinishtMatch = true;
-        });
+      } else if (msgs.length > 2) {
+        if (msgs[1] == "winner") {
+          if (msgs[2] == playerId) {
+            win();
+          } else
+            lose();
+        }
       }
     } else {
       print(reply.msg);
@@ -298,24 +302,25 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     poineterLeft = source.width;
     pointerTop = source.height;
     Timer.periodic(Duration(milliseconds: 20), (timer) {
-      setState(() {
-        if (idx == 5) {
-          timer.cancel();
-          pointerVisiable = false;
-          if (board[to ~/ 9][to % 9] != 0) {
-            // boom sound
-            try {
-              clickAudio.play("musics/boom.wav");
-            } catch (e) {
-              print(e);
+      if (mounted)
+        setState(() {
+          if (idx == 5) {
+            timer.cancel();
+            pointerVisiable = false;
+            if (board[to ~/ 9][to % 9] != 0) {
+              // boom sound
+              try {
+                clickAudio.play("musics/boom.wav");
+              } catch (e) {
+                print(e);
+              }
             }
+            board[to ~/ 9][to % 9] = type;
           }
-          board[to ~/ 9][to % 9] = type;
-        }
-        poineterLeft += x_step;
-        pointerTop += y_step;
-        idx += 1;
-      });
+          poineterLeft += x_step;
+          pointerTop += y_step;
+          idx += 1;
+        });
     });
   }
 
@@ -342,7 +347,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     gameId = widget.gameId;
     playerColor = widget.playerColor;
     playerId = widget.playerId;
-    listenGameReply();
   }
 
   void showHideKeyboard(bool visible) {
@@ -368,6 +372,29 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     }
   }
 
+  void win() {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          isFinishtMatch = true;
+        });
+        timer.cancel();
+      }
+    });
+  }
+
+  void lose() {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          isFinishtMatch = true;
+          resultMatch = "Bạn thua";
+        });
+        timer.cancel();
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -379,6 +406,7 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
     );
     //listen onchange data from chat service
     listenChatMessage();
+    listenGameReply();
     WidgetsBinding.instance!
         .addPostFrameCallback((_) => executeAfterBuildComplete());
   }
@@ -404,7 +432,6 @@ class _PlayingGameScreenState extends State<PlayingGameScreen> {
       rotateBoard(board);
       rotateCount += 1;
     }
-    print(waiting);
     return Container(
       child: Scaffold(
         resizeToAvoidBottomInset: false,

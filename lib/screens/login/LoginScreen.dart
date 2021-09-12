@@ -176,14 +176,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showMessage(String message) {
-    setState(() {
-      _message = message;
-    });
+    if (mounted)
+      setState(() {
+        _message = message;
+      });
   }
 
   void submit(context) async {
     print("email : $email");
     print("password: $password");
+    // _handleSignOut();
     // submit with email and password variables
     // var respone = await accountService.login(email, password);
     // print(respone);

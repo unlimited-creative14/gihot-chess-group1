@@ -300,11 +300,13 @@ class _RoomScreenState extends State<RoomScreen> {
       var msgs = reply.message.toString().split(":");
       if (msgs.length == 3) {
         showFriendRequest(msgs[1], msgs[2]);
-      } else if (msgs[3] == "accepted") {
-        alertMsg("Yêu cầu đã được chấp nhận");
-        insertNewFriend(msgs[2]);
-      } else {
-        alertMsg("Yêu cầu đã bị từ chối");
+      } else if (msgs.length == 4) {
+        if (msgs[3] == "accepted") {
+          alertMsg("Yêu cầu đã được chấp nhận");
+          insertNewFriend(msgs[2]);
+        } else {
+          alertMsg("Yêu cầu đã bị từ chối");
+        }
       }
     } else if (reply.type.toString() == "Friend") {
       // receive chat message
